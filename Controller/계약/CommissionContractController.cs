@@ -12,7 +12,7 @@ namespace ConsoleApp1.Controller
 {
     public class CommissionContractController
     {
-        private readonly HttpClient _httpClient;
+        private static HttpClient _httpClient;
         public CommissionContractController(Config config)
         {
             _httpClient = new HttpClient(new HttpClientHandler
@@ -25,180 +25,8 @@ namespace ConsoleApp1.Controller
             _httpClient.DefaultRequestHeaders.Add("accept", "application/json");
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {config.Token}");
         }
-        /*private async Task<JArray> GetVendorBillingEntitiesReceiver(int vendorID)
-        {
-            var VendorBillingEntitiesEndpoint = string.Format("/vendor/{0}/billing-entities/", vendorID);
-            using (var requestMessage = new HttpRequestMessage(new HttpMethod("GET"), VendorBillingEntitiesEndpoint))
-            {
-                try
-                {
-                    Console.WriteLine(requestMessage);
-                    using (var response = await _httpClient.SendAsync(requestMessage))
-                    {
-                        if (response.IsSuccessStatusCode)
-                        {
-                            var contentString = await response.Content.ReadAsStringAsync();
-                            return JArray.Parse(contentString);
-
-                        }
-                        else
-                        {
-                            Console.WriteLine($"Response status: {response.StatusCode}");
-                            return null;
-                        }
-                    }
-                }
-                catch (HttpRequestException ex)
-                {
-                    Console.WriteLine($"Request error: {ex.Message}");
-                    // 예외 처리를 위한 로직 추가
-                    return null;
-                }
-                catch (JsonException ex)
-                {
-                    Console.WriteLine($"JSON parsing error: {ex.Message}");
-                    // 예외 처리를 위한 로직 추가
-                    return null;
-                }
-            }
-        }
-        public async Task<int> GetVendorBillingEntities(int vendorID, string type)
-        {
-            JArray GetVendorBillingEntitiesObj = await GetVendorBillingEntitiesReceiver(vendorID);
-
-            JToken targetItem = GetVendorBillingEntitiesObj.
-                            FirstOrDefault(item => (string)item["billing_entity_type"] == type);
-
-            if (targetItem != null)
-            {
-                return (int)targetItem["id"];
-            }
-            else
-            {
-                return 0;
-            }
-        }
-
-        private async Task<JObject> GetFranchisesIDReceiver(bool is_group, string franchisesName)
-        {
-            Dictionary<string, string> parameters = new Dictionary<string, string>
-        {
-            { "is_group", is_group.ToString() },
-            { "name", franchisesName }
-            // Add more parameters as needed
-        };
-            var Endpoint = "/franchises/"; // Ticket Download EndPoint
-            string queryString = QueryStringBuilder.BuildQueryString(parameters);
-            Endpoint += queryString;
-
-            using (var requestMessage = new HttpRequestMessage(new HttpMethod("GET"), Endpoint))
-            {
-                try
-                {
-                    using (var response = await _httpClient.SendAsync(requestMessage))
-                    {
-                        if (response.IsSuccessStatusCode)
-                        {
-                            var contentString = await response.Content.ReadAsStringAsync();
-                            return JObject.Parse(contentString);
-
-                        }
-                        else
-                        {
-                            Console.WriteLine($"Response status: {response.StatusCode}");
-                            return null;
-                        }
-                    }
-                }
-                catch (HttpRequestException ex)
-                {
-                    Console.WriteLine($"Request error: {ex.Message}");
-                    // 예외 처리를 위한 로직 추가
-                    return null;
-                }
-            }
-        }
-        public async Task<int> GetFranchisesID(bool is_group, string franchisesName)
-        {
-            JObject GetFranchisesIDObj = await GetFranchisesIDReceiver(is_group, franchisesName);
-            JToken targetItem = GetFranchisesIDObj["results"].
-                            FirstOrDefault(item => ((string)item["name"]).EndsWith(franchisesName));
-
-            if (targetItem != null)
-            {
-                return (int)targetItem["id"];
-            }
-            else
-            {
-                return 0;
-            }
-        }
-
-        private async Task<JArray> GetCommissionIDReceiver(bool is_alliance, string order_type, int franchisesID, string commissionName)
-        {
-            Dictionary<string, string> parameters = new Dictionary<string, string>
-        {
-            {"is_alliance", is_alliance.ToString() },
-                { "order_type", order_type },
-                { "franchise_id", franchisesID.ToString() },
-                { "type", order_type },
-                { "name", commissionName }
-            // Add more parameters as needed
-        };
-            var Endpoint = "/commission/";
-            string queryString = QueryStringBuilder.BuildQueryString(parameters);
-            Endpoint += queryString;
-
-            using (var requestMessage = new HttpRequestMessage(new HttpMethod("GET"), Endpoint))
-            {
-                try
-                {
-                    using (var response = await _httpClient.SendAsync(requestMessage))
-                    {
-                        if (response.IsSuccessStatusCode)
-                        {
-                            var contentString = await response.Content.ReadAsStringAsync();
-                            return JArray.Parse(contentString);
-
-                        }
-                        else
-                        {
-                            Console.WriteLine($"Response status: {response.StatusCode}");
-                            return null;
-                        }
-                    }
-                }
-                catch (HttpRequestException ex)
-                {
-                    Console.WriteLine($"Request error: {ex.Message}");
-                    // 예외 처리를 위한 로직 추가
-                    return null;
-                }
-            }
-        }
-        public async Task<int> GetCommissionID(bool is_alliance, string order_type, int franchisesID, string commissionName)
-        {
-            JArray GetCommissionIDObj = await GetCommissionIDReceiver(is_alliance, order_type, franchisesID, commissionName);
-            JToken targetItem = GetCommissionIDObj.
-                            FirstOrDefault(item => ((string)item["name"]).EndsWith(commissionName));
-
-            if (targetItem != null)
-            {
-                return (int)targetItem["id"];
-            }
-            else
-            {
-                return 0;
-            }
-        }*/
         private class VendorBillingEntities
         {
-            private readonly HttpClient _httpClient;
-            public VendorBillingEntities(HttpClient httpClient)
-            {
-                _httpClient = httpClient;
-            }
-
             private async Task<JArray> GetVendorBillingEntitiesReceiver(int vendorID)
             {
                 var Endpoint = string.Format("/vendor/{0}/billing-entities/", vendorID);
@@ -254,11 +82,6 @@ namespace ConsoleApp1.Controller
         }
         private class FranchisesID
         {
-            private readonly HttpClient _httpClient;
-            public FranchisesID(HttpClient httpClient)
-            {
-                _httpClient = httpClient;
-            }
             private async Task<JObject> GetFranchisesIDReceiver(bool is_group, string franchisesName)
             {
                 Dictionary<string, string> parameters = new Dictionary<string, string>
@@ -316,11 +139,6 @@ namespace ConsoleApp1.Controller
         }
         private class CommissionID
         {
-            private readonly HttpClient _httpClient;
-            public CommissionID(HttpClient httpClient)
-            {
-                _httpClient = httpClient;
-            }
             private async Task<JArray> GetCommissionIDReceiver(bool is_alliance, string order_type, int franchisesID, string commissionName)
             {
                 Dictionary<string, string> parameters = new Dictionary<string, string>
@@ -379,8 +197,6 @@ namespace ConsoleApp1.Controller
                 }
             }
         }
-
-
         private async Task<JObject> AddCommissionContractReceiver(CommissionContract commissionContract)
         {
             var Endpoint = "/commission-contract/";
@@ -422,9 +238,9 @@ namespace ConsoleApp1.Controller
                         int franchisesID = await GetFranchisesID(is_group, franchises_name);
                         int commissionID = await GetCommissionID(is_alliance, order_type, franchisesID, commission_name);*/
 
-            int billingTypeID = new VendorBillingEntities(_httpClient).GetVendorBillingEntities(vendor_id, billing_entity_type).Result;
-            int franchisesID = new FranchisesID(_httpClient).GetFranchisesID(is_group, franchises_name).Result;
-            int commissionID = new CommissionID(_httpClient).GetCommissionID(is_alliance, order_type, franchisesID, commission_name).Result;
+            int billingTypeID = new VendorBillingEntities().GetVendorBillingEntities(vendor_id, billing_entity_type).Result;
+            int franchisesID = new FranchisesID().GetFranchisesID(is_group, franchises_name).Result;
+            int commissionID = new CommissionID().GetCommissionID(is_alliance, order_type, franchisesID, commission_name).Result;
 
             CommissionContract contract = new CommissionContract()
             {
