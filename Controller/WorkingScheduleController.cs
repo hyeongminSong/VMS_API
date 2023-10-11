@@ -1,13 +1,13 @@
 ﻿using ConsoleApp1.Models;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Json;
-using System.Net.Http;
-using System.Threading.Tasks;
 using System.Data;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 
 namespace ConsoleApp1.Controller
 {
@@ -39,61 +39,6 @@ namespace ConsoleApp1.Controller
             };
             regularScheduleMetaList.Add(regularScheduleMeta);
 
-            return regularScheduleMetaList;
-        }
-
-        private List<regular_schedule_meta> CreateJsonAddContent(DataTable Addtable)
-        {
-            foreach (DataRow row in Addtable.Rows)
-            {
-                regular_schedule_meta regularScheduleMeta = new regular_schedule_meta
-                {
-                    order_type = "delivery",
-                    weekday = (string)row["weekday"],
-                    opening_time = (Models.TimeSpan)row["opening_time"],
-                    break_time = (Models.TimeSpan[])row["break_time"],
-                    method = "POST"
-                };
-                regularScheduleMetaList.Add(regularScheduleMeta);
-
-            }
-            return regularScheduleMetaList;
-        }
-        private List<regular_schedule_meta> CreateJsonUpdateContent(DataTable UpdateTable)
-        {
-            foreach (DataRow row in UpdateTable.Rows)
-            {
-                regular_schedule_meta regularScheduleMeta = new regular_schedule_meta
-                {
-                    id = (int)row["id"],
-                    order_type = "delivery",
-                    weekday = (string)row["weekday"],
-                    opening_time = (Models.TimeSpan)row["opening_time"],
-                    break_time = (Models.TimeSpan[])row["break_time"],
-                    method = "PATCH"
-
-                };
-                regularScheduleMetaList.Add(regularScheduleMeta);
-            }
-            return regularScheduleMetaList;
-        }
-
-        private List<regular_schedule_meta> CreateJsonDeleteContent(DataTable UpdateTable)
-        {
-            foreach (DataRow row in UpdateTable.Rows)
-            {
-                regular_schedule_meta regularScheduleMeta = new regular_schedule_meta
-                {
-                    id = (int)row["id"],
-                    order_type = "delivery",
-                    /*weekday = (string)row["weekday"],
-                    opening_time = (Models.TimeSpan)row["opening_time"],
-                    break_time = (Models.TimeSpan[])row["break_time"],*/
-                    method = "DELETE"
-
-                };
-                regularScheduleMetaList.Add(regularScheduleMeta);
-            }
             return regularScheduleMetaList;
         }
         private async Task<JObject> SearchWorkingScheduleReceiver(int vendorID)
@@ -200,8 +145,8 @@ namespace ConsoleApp1.Controller
                 .Select(CurrentRow => new
                 {
                     weekday = CurrentRow.Field<string>("weekday"),
-/*                    opening_time = CurrentRow.Field<Models.TimeSpan>("opening_time"),
-                    break_time = CurrentRow.Field<Models.TimeSpan[]>("break_time"),*/
+                    /*                    opening_time = CurrentRow.Field<Models.TimeSpan>("opening_time"),
+                                        break_time = CurrentRow.Field<Models.TimeSpan[]>("break_time"),*/
                     id = CurrentRow.Field<int>("id")
                 });
 

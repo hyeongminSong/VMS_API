@@ -15,7 +15,10 @@ namespace ConsoleApp1.Controller
         private readonly HttpClient _httpClient;
         public CommissionContractController(Config config)
         {
-            _httpClient = new HttpClient
+            _httpClient = new HttpClient(new HttpClientHandler
+            {
+                MaxConnectionsPerServer = 20 // 특정 도메인에 대한 최대 동시 커넥션 수를 20으로 설정
+            })
             {
                 BaseAddress = new Uri(config.URL)
             };
@@ -188,7 +191,7 @@ namespace ConsoleApp1.Controller
                 return 0;
             }
         }*/
-        public class VendorBillingEntities
+        private class VendorBillingEntities
         {
             private readonly HttpClient _httpClient;
             public VendorBillingEntities(HttpClient httpClient)
@@ -249,7 +252,7 @@ namespace ConsoleApp1.Controller
                 }
             }
         }
-        public class FranchisesID
+        private class FranchisesID
         {
             private readonly HttpClient _httpClient;
             public FranchisesID(HttpClient httpClient)
@@ -311,7 +314,7 @@ namespace ConsoleApp1.Controller
                 }
             }
         }
-        public class CommissionID
+        private class CommissionID
         {
             private readonly HttpClient _httpClient;
             public CommissionID(HttpClient httpClient)
@@ -380,7 +383,7 @@ namespace ConsoleApp1.Controller
 
         private async Task<JObject> AddCommissionContractReceiver(CommissionContract commissionContract)
         {
-            var Endpoint = "//commission-contract/";
+            var Endpoint = "/commission-contract/";
 
             string jsonString = JsonConvert.SerializeObject(commissionContract);
             var jsonContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
@@ -419,9 +422,9 @@ namespace ConsoleApp1.Controller
                         int franchisesID = await GetFranchisesID(is_group, franchises_name);
                         int commissionID = await GetCommissionID(is_alliance, order_type, franchisesID, commission_name);*/
 
-            int billingTypeID = await new VendorBillingEntities(_httpClient).GetVendorBillingEntities(vendor_id, billing_entity_type);
-            int franchisesID = await new FranchisesID(_httpClient).GetFranchisesID(is_group, franchises_name);
-            int commissionID = await new CommissionID(_httpClient).GetCommissionID(is_alliance, order_type, franchisesID, commission_name);
+            int billingTypeID = new VendorBillingEntities(_httpClient).GetVendorBillingEntities(vendor_id, billing_entity_type).Result;
+            int franchisesID = new FranchisesID(_httpClient).GetFranchisesID(is_group, franchises_name).Result;
+            int commissionID = new CommissionID(_httpClient).GetCommissionID(is_alliance, order_type, franchisesID, commission_name).Result;
 
             CommissionContract contract = new CommissionContract()
             {
@@ -433,7 +436,7 @@ namespace ConsoleApp1.Controller
                 commission_start_date = start_date
             };
 
-            JObject GetCommissionIDObj = await AddCommissionContractReceiver(contract);
+            JObject GetCommissionIDObj = AddCommissionContractReceiver(contract).Result;
             if (GetCommissionIDObj != null)
             {
                 return (int)GetCommissionIDObj["id"];
