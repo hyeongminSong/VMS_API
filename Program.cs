@@ -88,19 +88,35 @@ namespace ConsoleApp1
                 Console.WriteLine(await new DeleteTempScheduleTimeController(config).
                     DeleteTempSchedule(1001198, "높은 주문 실패율로 인한 주문접수 불가",deleteTempScheduleTimeBody));*/
                 Console.WriteLine(config.Token);
-                DataTable temp = CreateTempTable();
+                //DataTable temp = CreateTempTable();
                 //Console.WriteLine(await new AddWorkingScheduleController(config).AddWorkingSchedule(1001198, datatable));
                 /*DataTable data = await new WorkingScheduleController(config).UpdateWorkingSchedule(1001201, new WorkingTimeTable().ParsingDataTable(temp));
                 data = new WorkingTimeTable().unParsingDataTable(data);
                 data = new WorkingTimeTable().ParsingDataTable(data);*/
-                Console.WriteLine(await new GetVendorBillingEntitiesContoller(config).GetVendorBillingEntities(1001201, "franchise"));
 
-                Console.WriteLine(new CommissionContractController(config).AddCommissionContract(
-                    1001201, "franchise",
-                    false, "오이시쿠나레모에모에큥",
-                    true, "오이시VD", "VD",
-                    "indirect", DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")));
+                /*int billingTypeID = await new VendorController(config).GetVendorBillingEntities(1001201, "franchise");
+                int franchisesID = await new FranchisesController(config).GetFranchisesID(false, "오이시쿠나레모에모에큥");
+                int commissionID = await new CommissionController(config).GetCommissionID(true, "VD", franchisesID, "오이시VD");
+
+                Console.WriteLine(await new CommissionController(config).AddCommissionContract(
+                    1001201, billingTypeID, commissionID, true,
+                    "indirect", DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")));*/
+
+                //Console.WriteLine(await new ContractAuditController(config).RequestSalesApprove(1001201, 3810));
+
+                /*Console.WriteLine(await new ContractAuditController(config).UpdateContractAudit(1001201, 3810, 588,
+                    DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")));*/
+                
+                Console.WriteLine(await new ContractAuditController(config).RequestOwnerApprove(1001201, 3810));
+
+
+                Console.WriteLine(await new VendorController(config).GetVendorAddress("인천광역시 중구 연안부두로43번길  18 GS25,중구항동점"));
+
+                //Console.WriteLine(await new ContractAuditController(config).RequestOwnerApprove(1001201, 3808));
+
                 Console.WriteLine(config.Token);
+
+                //await new ContractAuditController(config).
                 /* DataTable result = new WorkingTimeTable().unParsingDataTable(
                      await new WorkingScheduleController(config).
                      UpdateWorkingSchedule(1001201,

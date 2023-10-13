@@ -106,10 +106,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controller\UpdateHolidayScheduleController.cs" />
-    <Compile Include="Controller\계약\CommissionContractController.cs" />
-    <Compile Include="Controller\계약\GetCommissionIDController.cs" />
-    <Compile Include="Controller\계약\GetFranchisesIDController.cs" />
-    <Compile Include="Controller\계약\GetVendorBillingEntitiesContoller.cs" />
+    <Compile Include="Controller\가게\VendorController.cs" />
+    <Compile Include="Controller\계약\ContractAuditController.cs" />
+    <Compile Include="Controller\이용료\CommissionController.cs" />
     <Compile Include="Controller\WorkingScheduleController.cs" />
     <Compile Include="Controller\AddWorkingScheduleController.cs" />
     <Compile Include="Controller\DeleteTempScheduleTimeController.cs" />
@@ -122,7 +121,9 @@
     <Compile Include="Controller\SearchWorkingScheduleController.cs" />
     <Compile Include="Controller\VendorDownloadController.cs" />
     <Compile Include="Controller\TokenController.cs" />
+    <Compile Include="Controller\프랜차이즈\FranchisesController.cs" />
     <Compile Include="Models\Commission.cs" />
+    <Compile Include="Models\ContractAudit.cs" />
     <Compile Include="Models\holiday_schedule_meta.cs" />
     <Compile Include="Models\WorkingScheduleBody.cs" />
     <Compile Include="Models\DeleteTempScheduleTimeBody.cs" />
@@ -134,6 +135,7 @@
     <Compile Include="Models\TimeSpan.cs" />
     <Compile Include="Models\UserData.cs" />
     <Compile Include="Models\WorkingTimeTable.cs" />
+    <Compile Include="Models\가게\AddressInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

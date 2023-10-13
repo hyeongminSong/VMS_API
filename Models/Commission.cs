@@ -9,7 +9,11 @@
     {
         public int Id { get; set; }
     }
-    
+    public class billing_entry_info
+    {
+        public int Id { get; set; }
+    }
+
     public class CommissionContract
     {
         public int Id { get; set; }
