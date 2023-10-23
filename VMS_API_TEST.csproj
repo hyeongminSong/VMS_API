@@ -136,6 +136,7 @@
     <Compile Include="Models\UserData.cs" />
     <Compile Include="Models\WorkingTimeTable.cs" />
     <Compile Include="Models\가게\AddressInfo.cs" />
+    <Compile Include="Models\가게\Vendor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

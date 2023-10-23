@@ -1,7 +1,11 @@
 ﻿using ConsoleApp1.Controller;
 using ConsoleApp1.Models;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace ConsoleApp1
@@ -66,62 +70,67 @@ namespace ConsoleApp1
 
             try
             {
-                /*AddTempScheduleTimeBody addTempScheduleTimeBody = new AddTempScheduleTimeBody()
-                {
-                    method = "POST",
-                    order_type = "delivery",
-                    description = "API TEST DESCRIPTION",
-                    start_date = DateTime.Today.ToString("yyyy-MM-dd"),
-                    end_date = DateTime.Today.AddYears(1).ToString("yyyy-MM-dd")                   
-                };
-
-                Console.WriteLine(await new AddTempScheduleTimeController(config).AddTempSchedule(1001198,
-                    "높은 주문 실패율로 인한 주문접수 불가",
-                    addTempScheduleTimeBody));
-
-                DeleteTempScheduleTimeBody deleteTempScheduleTimeBody = new DeleteTempScheduleTimeBody()
-                {
-                    method = "DELETE",
-                    order_type = "delivery"
-                };
-
-                Console.WriteLine(await new DeleteTempScheduleTimeController(config).
-                    DeleteTempSchedule(1001198, "높은 주문 실패율로 인한 주문접수 불가",deleteTempScheduleTimeBody));*/
                 Console.WriteLine(config.Token);
-                //DataTable temp = CreateTempTable();
-                //Console.WriteLine(await new AddWorkingScheduleController(config).AddWorkingSchedule(1001198, datatable));
-                /*DataTable data = await new WorkingScheduleController(config).UpdateWorkingSchedule(1001201, new WorkingTimeTable().ParsingDataTable(temp));
-                data = new WorkingTimeTable().unParsingDataTable(data);
-                data = new WorkingTimeTable().ParsingDataTable(data);*/
 
-                /*int billingTypeID = await new VendorController(config).GetVendorBillingEntities(1001201, "franchise");
-                int franchisesID = await new FranchisesController(config).GetFranchisesID(false, "오이시쿠나레모에모에큥");
-                int commissionID = await new CommissionController(config).GetCommissionID(true, "VD", franchisesID, "오이시VD");
+                //카테고리 객체 호출 API
+                category_set categoryToken = await new VendorController(config).GetCategoryToken("야식");
+                //기등록 가게 조회 API
+                JObject vendorObj = await new VendorController(config).GetVendor(1001201);
+                //기등록 가게 -> 기등록 카테고리 Obj 저장
+                JArray categoryArr = (JArray)vendorObj["category_set"];
+                //기등록 카테고리 Obj -> 카테고리 객체 리스트 변경
+                List<category_set> categoryTokenList = categoryArr.Select(j => new category_set()
+                {
+                    id = (int)j["id"],
+                    name = (string)j["name"],
+                    category_type = (string)j["category_type"],
+                }).ToList();
 
+                categoryTokenList.Add(categoryToken);
+                Console.WriteLine(categoryTokenList.ToArray());
+
+                //가게 기본 정보 업데이트 API
+                await new VendorController(config).UpdateVendor(1001201, new VendorCategoryUpdate()
+                {
+                    category_set = categoryTokenList.ToArray()
+                });
+
+                /*
+                 //정산 주체 API
+                 int billingTypeID = await new VendorController(config).GetVendorBillingEntities(1001201, "franchise");
+                 //프랜차이즈 ID 조회 API
+                 int franchisesID = await new FranchisesController(config).GetFranchisesID(false, "오이시쿠나레모에모에큥");
+                 //이용료 ID 조회 API
+                 int commissionID = await new CommissionController(config).GetCommissionID(true, "VD", franchisesID, "오이시VD");
+
+                 //이용료 생성 API
                 Console.WriteLine(await new CommissionController(config).AddCommissionContract(
-                    1001201, billingTypeID, commissionID, true,
-                    "indirect", DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")));*/
+                    1001358, billingTypeID, commissionID, true,
+                    "indirect", DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")));
 
-                //Console.WriteLine(await new ContractAuditController(config).RequestSalesApprove(1001201, 3810));
+                 //계약서 생성 API
+                Console.WriteLine(await new ContractAuditController(config).CreateContractAudit(1001358, DateTime.Today.AddDays(10).ToString("yyyy-MM-dd")));
 
-                /*Console.WriteLine(await new ContractAuditController(config).UpdateContractAudit(1001201, 3810, 588,
-                    DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")));*/
-                
+                 //세일즈 심사 승인 API
+                Console.WriteLine(await new ContractAuditController(config).RequestSalesApprove(1001201, 3810));
+
+                 //계약서 영업 개시일 업데이트 API
+                Console.WriteLine(await new ContractAuditController(config).UpdateContractAudit(1001201, 3810, 588,
+                    DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")));
+
+                 //사장님 승인 요청 API
                 Console.WriteLine(await new ContractAuditController(config).RequestOwnerApprove(1001201, 3810));
 
+                */
 
-                Console.WriteLine(await new VendorController(config).GetVendorAddress("인천광역시 중구 연안부두로43번길  18 GS25,중구항동점"));
+
+                //Console.WriteLine(await new VendorController(config).GetVendorAddress("인천광역시 중구 연안부두로43번길  18 GS25,중구항동점"));
 
                 //Console.WriteLine(await new ContractAuditController(config).RequestOwnerApprove(1001201, 3808));
 
                 Console.WriteLine(config.Token);
 
                 //await new ContractAuditController(config).
-                /* DataTable result = new WorkingTimeTable().unParsingDataTable(
-                     await new WorkingScheduleController(config).
-                     UpdateWorkingSchedule(1001201,
-                     new WorkingTimeTable().ParsingDataTable(temp)));
-                 Console.WriteLine(result);*/
 
 
 
