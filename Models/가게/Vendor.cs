@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 namespace ConsoleApp1.Models
 {
+
+
     public class VendorCategoryUpdate
     {
         public category_set[] category_set { get; set; }
@@ -24,5 +26,20 @@ namespace ConsoleApp1.Models
     {
         public string name { get; set; }
         public string company { get; set; }
+    }
+
+
+
+    public class termination
+    {
+        public int reason { get; set; }
+        public string termination_date { get; set; }
+    }
+    public class BulkCreateTerminationVendor
+    {
+        public int company_id { get; set; }
+        public string company_number { get; set; }
+        public int[] vendor_ids { get; set; }
+        public termination termination { get; set;}
     }
 }

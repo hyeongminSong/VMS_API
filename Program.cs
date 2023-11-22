@@ -72,7 +72,7 @@ namespace ConsoleApp1
             {
                 Console.WriteLine(config.Token);
 
-                //카테고리 객체 호출 API
+                /*//카테고리 객체 호출 API
                 category_set categoryToken = await new VendorController(config).GetCategoryToken("야식");
                 //기등록 가게 조회 API
                 JObject vendorObj = await new VendorController(config).GetVendor(1001201);
@@ -93,7 +93,12 @@ namespace ConsoleApp1
                 await new VendorController(config).UpdateVendor(1001201, new VendorCategoryUpdate()
                 {
                     category_set = categoryTokenList.ToArray()
-                });
+                });*/
+
+                int companyID = await new CompanyController(config).GetCompanyID("333-74-33333");
+                int terminationReasonID = await new TerminationVendorController(config).GetTerminationReasonID("높은 주문 실패율(킥아웃)");
+                await new TerminationVendorController(config).
+                    CreateTerminationVendor(companyID, "333-74-33333", 1001358, terminationReasonID, DateTime.Today.AddDays(10).ToString("yyyy-MM-dd"));
 
                 /*
                  //정산 주체 API

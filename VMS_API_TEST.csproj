@@ -108,6 +108,8 @@
     <Compile Include="Controller\UpdateHolidayScheduleController.cs" />
     <Compile Include="Controller\가게\VendorController.cs" />
     <Compile Include="Controller\계약\ContractAuditController.cs" />
+    <Compile Include="Controller\계약해지\TerminationVendorController.cs" />
+    <Compile Include="Controller\사업자\CompanyController.cs" />
     <Compile Include="Controller\이용료\CommissionController.cs" />
     <Compile Include="Controller\WorkingScheduleController.cs" />
     <Compile Include="Controller\AddWorkingScheduleController.cs" />

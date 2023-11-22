@@ -8,11 +8,21 @@ namespace ConsoleApp1.Models
 {
     public class AddressInfo
     {
-        public int id {  get; set; }
-        public string name { get; set; }
-        public string city { get; set; }
-        public string state { get; set; }
-        public string zipcode { get; set; }
-        public string country { get; set; }
+        public string sido {  get; set; }
+        public string sigugun { get; set; }
+        public string admin_dongmyun { get; set; }
+        public string law_dongmyun { get; set; }
+        public string road_dongmyun { get; set; }
+        public string admin_detailed_address { get; set; }
+        public string law_detailed_address { get; set; }
+        public string road_detailed_address { get; set; }
+        public string ri {  get; set; }
+        public string zip_code { get; set; }
+        public double lat {  get; set; }
+        public double lon { get; set; }
+        public string custom_detailed_address { get; set; }
+
+
+
     }
 }
