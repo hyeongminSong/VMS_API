@@ -7,8 +7,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using System.Diagnostics.Contracts;
-using System.Security.Cryptography;
+using System.Text.RegularExpressions;
+using System.Reflection.Emit;
 
 namespace ConsoleApp1.Controller
 {
@@ -54,12 +54,6 @@ namespace ConsoleApp1.Controller
                         // 예외 처리를 위한 로직 추가
                         return null;
                     }
-                    catch (JsonException ex)
-                    {
-                        Console.WriteLine($"JSON parsing error: {ex.Message}");
-                        // 예외 처리를 위한 로직 추가
-                        return null;
-                    }
                 }
             }
         }
@@ -100,12 +94,6 @@ namespace ConsoleApp1.Controller
                         // 예외 처리를 위한 로직 추가
                         return null;
                     }
-                    catch (JsonException ex)
-                    {
-                        Console.WriteLine($"JSON parsing error: {ex.Message}");
-                        // 예외 처리를 위한 로직 추가
-                        return null;
-                    }
                 }
             }
         }
@@ -138,65 +126,16 @@ namespace ConsoleApp1.Controller
                         // 예외 처리를 위한 로직 추가
                         return null;
                     }
-                    catch (JsonException ex)
-                    {
-                        Console.WriteLine($"JSON parsing error: {ex.Message}");
-                        // 예외 처리를 위한 로직 추가
-                        return null;
-                    }
                 }
             }
-            public async Task<JObject> CreateVendorReceiver(string addressKeyword)
+            public async Task<JObject> CreateVendorReceiver(Models.Vendor CreateVendorObj)
             {
-                Dictionary<string, string> parameters = new Dictionary<string, string>
-        {
-            { "search_keyword", addressKeyword },
-            // Add more parameters as needed
-        };
-                var Endpoint = "/vendor-addresses/"; // Ticket Download EndPoint
-
-                string queryString = QueryStringBuilder.BuildQueryString(parameters);
-                Endpoint += queryString;
-                using (var requestMessage = new HttpRequestMessage(new HttpMethod("GET"), Endpoint))
-                {
-                    try
-                    {
-                        using (var response = await _httpClient.SendAsync(requestMessage))
-                        {
-                            if (response.IsSuccessStatusCode)
-                            {
-                                var contentString = await response.Content.ReadAsStringAsync();
-                                return JObject.Parse(contentString);
-                            }
-                            else
-                            {
-                                Console.WriteLine($"Response status: {response.StatusCode}");
-                                return null;
-                            }
-                        }
-                    }
-                    catch (HttpRequestException ex)
-                    {
-                        Console.WriteLine($"Request error: {ex.Message}");
-                        // 예외 처리를 위한 로직 추가
-                        return null;
-                    }
-                    catch (JsonException ex)
-                    {
-                        Console.WriteLine($"JSON parsing error: {ex.Message}");
-                        // 예외 처리를 위한 로직 추가
-                        return null;
-                    }
-                }
-            }
-            public async Task<JObject> UpdateVendorReceiver(int vendorID, Object UpdateVendorObj)
-            {
-                string jsonString = JsonConvert.SerializeObject(UpdateVendorObj);
+                string jsonString = JsonConvert.SerializeObject(CreateVendorObj);
                 var jsonContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
 
-                var Endpoint = string.Format("/vendor/{0}/", vendorID);
-                
-                using (var requestMessage = new HttpRequestMessage(new HttpMethod("PATCH"), Endpoint)
+                var Endpoint = "/vendor/";
+
+                using (var requestMessage = new HttpRequestMessage(new HttpMethod("POST"), Endpoint)
                 {
                     Content = jsonContent
                 })
@@ -223,9 +162,39 @@ namespace ConsoleApp1.Controller
                         // 예외 처리를 위한 로직 추가
                         return null;
                     }
-                    catch (JsonException ex)
+                }
+            }
+            public async Task<JObject> UpdateVendorReceiver(int vendorID, Object UpdateVendorObj)
+            {
+                string jsonString = JsonConvert.SerializeObject(UpdateVendorObj);
+                var jsonContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
+
+                var Endpoint = string.Format("/vendor/{0}/", vendorID);
+
+                using (var requestMessage = new HttpRequestMessage(new HttpMethod("PATCH"), Endpoint)
+                {
+                    Content = jsonContent
+                })
+                {
+                    try
                     {
-                        Console.WriteLine($"JSON parsing error: {ex.Message}");
+                        using (var response = await _httpClient.SendAsync(requestMessage))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var contentString = await response.Content.ReadAsStringAsync();
+                                return JObject.Parse(contentString);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Response status: {response.StatusCode}");
+                                return null;
+                            }
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"Request error: {ex.Message}");
                         // 예외 처리를 위한 로직 추가
                         return null;
                     }
@@ -265,15 +234,9 @@ namespace ConsoleApp1.Controller
                         // 예외 처리를 위한 로직 추가
                         return null;
                     }
-                    catch (JsonException ex)
-                    {
-                        Console.WriteLine($"JSON parsing error: {ex.Message}");
-                        // 예외 처리를 위한 로직 추가
-                        return null;
-                    }
                 }
             }
-            
+
         }
 
         public async Task<category_set> GetCategoryToken(string categoryName)
@@ -302,10 +265,10 @@ namespace ConsoleApp1.Controller
         {
             return await new Vendor().GetVendorReceiver(vendorID); ;
         }
-        public async Task<int> CreateVendor(string addressKeyword)
+        public async Task<JObject> CreateVendor(Models.Vendor vendorObject)
         {
-            JObject GetVendorAddressObj = await new Vendor().CreateVendorReceiver(addressKeyword);
-            return 0;
+            JObject GetVendorAddressObj = await new Vendor().CreateVendorReceiver(vendorObject);
+            return GetVendorAddressObj;
 
             /*JToken targetItem = GetVendorAddressObj.
                             FirstOrDefault(item => (string)item["billing_entity_type"] == type);
@@ -324,22 +287,42 @@ namespace ConsoleApp1.Controller
             JObject UpdateVendorObj = await new Vendor().UpdateVendorReceiver(vendorID, obj);
             return 0;
         }
-        public async Task<int> GetVendorAddress(string addressKeyword)
+        public async Task<AddressInfo> GetVendorAddressInfo(string addressKeyword)
         {
+            //return await new VendorAddress().GetVendorAddressReceiver(addressKeyword);
+            string[] addressToken = new GetAddressItem().GetAddressToken(addressKeyword);
             JObject GetVendorAddressObj = await new VendorAddress().GetVendorAddressReceiver(addressKeyword);
-            return 0;
-
-            /*JToken targetItem = GetVendorAddressObj.
-                            FirstOrDefault(item => (string)item["billing_entity_type"] == type);
+            JToken targetItem = GetVendorAddressObj["items"].Count() == 1
+                ? GetVendorAddressObj["items"].First() :
+                GetVendorAddressObj["items"]
+                .FirstOrDefault(item => addressToken.All(token => item["road"].Values().
+                Select(tokenItem => Regex.Replace((string)tokenItem, @"[^\w\d]", "")).Contains(token))
+                );
 
             if (targetItem != null)
             {
-                return (int)targetItem["id"];
+                AddressInfo addressInfo = new AddressInfo
+                {
+                    lat = (double)targetItem["point"]["lat"],
+                    lon = (double)targetItem["point"]["lng"],
+                    zip_code = (string)targetItem["zipcode"],
+                    sido = (string)targetItem["road"]["sido"],
+                    sigugun = (string)targetItem["road"]["sigugun"],
+                    admin_dongmyun = (string)targetItem["admin"]["dongmyun"],
+                    law_dongmyun = (string)targetItem["law"]["dongmyun"],
+                    road_dongmyun = (string)targetItem["road"]["dongmyun"],
+                    ri = (string)targetItem["road"]["ri"],
+                    admin_detailed_address = (string)targetItem["admin"]["detail"],
+                    law_detailed_address = (string)targetItem["law"]["detail"],
+                    road_detailed_address = (string)targetItem["road"]["detail"],
+                    custom_detailed_address = ""
+                };
+                return addressInfo;
             }
             else
             {
-                return 0;
-            }*/
+                return null;
+            }
         }
         public async Task<int> GetVendorBillingEntities(int vendorID, string type)
         {

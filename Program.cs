@@ -7,6 +7,7 @@ using System.Data;
 using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using static ConsoleApp1.Controller.CompanyController;
 
 namespace ConsoleApp1
 {
@@ -58,12 +59,15 @@ namespace ConsoleApp1
         {
             UserData user = new UserData
             {
-                Username = "heejin.park",
-                Password = "qkrgmlwls1106!",
+                /*Username = "heejin.park",
+                Password = "qkrgmlwls1106!",*/
+                Username = "hyeongmin.song",
+                Password = "q1w2e3r$$",               
                 Service_name = "VMS"
             };
 
-            string url = "https://staging-ceo-portal-api.yogiyo.co.kr/";
+            string url = "https://e-staging-ceo-portal-api.yogiyo.co.kr/";
+            //string url = "https://staging-ceo-portal-api.yogiyo.co.kr/";
             //string url = "https://ceo-portal-api.yogiyo.co.kr/";
             Config config = new Config(url);
             config = await new TokenController(config, user).GetAccessToken();
@@ -71,7 +75,10 @@ namespace ConsoleApp1
             try
             {
                 Console.WriteLine(config.Token);
+                //Console.WriteLine(await new VendorController(config).GetVendor(1001376));
 
+
+                ////////////////////////////////////////////////////////////////////////////////////////////////////
                 /*//카테고리 객체 호출 API
                 category_set categoryToken = await new VendorController(config).GetCategoryToken("야식");
                 //기등록 가게 조회 API
@@ -94,14 +101,16 @@ namespace ConsoleApp1
                 {
                     category_set = categoryTokenList.ToArray()
                 });*/
+                ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-                int companyID = await new CompanyController(config).GetCompanyID("333-74-33333");
+                ////////////////////////////////////////////////////////////////////////////////////////////////////
+                /*int companyID = await new CompanyController(config).GetCompanyID("333-74-33333");
                 int terminationReasonID = await new TerminationVendorController(config).GetTerminationReasonID("높은 주문 실패율(킥아웃)");
                 await new TerminationVendorController(config).
-                    CreateTerminationVendor(companyID, "333-74-33333", 1001358, terminationReasonID, DateTime.Today.AddDays(10).ToString("yyyy-MM-dd"));
+                    CreateTerminationVendor(companyID, "333-74-33333", 1001358, terminationReasonID, DateTime.Today.AddDays(10).ToString("yyyy-MM-dd"));*/
 
-                /*
-                 //정산 주체 API
+                ////////////////////////////////////////////////////////////////////////////////////////////////////
+                /* //정산 주체 API
                  int billingTypeID = await new VendorController(config).GetVendorBillingEntities(1001201, "franchise");
                  //프랜차이즈 ID 조회 API
                  int franchisesID = await new FranchisesController(config).GetFranchisesID(false, "오이시쿠나레모에모에큥");
@@ -124,18 +133,33 @@ namespace ConsoleApp1
                     DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")));
 
                  //사장님 승인 요청 API
-                Console.WriteLine(await new ContractAuditController(config).RequestOwnerApprove(1001201, 3810));
+                Console.WriteLine(await new ContractAuditController(config).RequestOwnerApprove(1001201, 3810));*/
 
-                */
+                ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+                // 가게 등록 TEST
+                int companyID = await new CompanyController(config).GetCompanyID("888-64-88888");
+                AddressInfo addressInfo = await new VendorController(config).GetVendorAddressInfo("경기도 고양시 일산동구 숲속마을로  50-58 보민프라자");
+                Console.WriteLine(await new VendorController(config).CreateVendor(new Vendor
+                {
+                    name = "API로만든가게3",
+                    company = new Models.Company
+                    {
+                        id = companyID
+                    },
+                    vendor_address = addressInfo,
+                    vertical_type = "restaurant",
+                    business_type = "no_info",
+                    license_number = "20230260108"
+                }));
 
 
-                //Console.WriteLine(await new VendorController(config).GetVendorAddress("인천광역시 중구 연안부두로43번길  18 GS25,중구항동점"));
+                ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-                //Console.WriteLine(await new ContractAuditController(config).RequestOwnerApprove(1001201, 3808));
+
+
 
                 Console.WriteLine(config.Token);
-
-                //await new ContractAuditController(config).
 
 
 

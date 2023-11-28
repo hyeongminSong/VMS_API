@@ -272,7 +272,7 @@ namespace ConsoleApp1.Controller
             }
         }
 
-        public async Task<int> UpdateContractAudit(int vendorID, int contractID, string open_date)
+        public async Task<int> UpdateContractAudit(int vendorID, int contractID, int v, string open_date)
         {
             ContractAuditPatch contractAuditPatch = new ContractAuditPatch()
             {
