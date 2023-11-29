@@ -28,7 +28,12 @@ namespace ConsoleApp1.Controller
         {
             public async Task<JObject> CreateContractAuditReceiver(int vendorID, Models.ContractAudit contractAudit)
             {
-                string jsonString = JsonConvert.SerializeObject(contractAudit);
+                var settings = new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    DefaultValueHandling = DefaultValueHandling.Ignore
+                };
+                string jsonString = JsonConvert.SerializeObject(contractAudit, settings);
                 var jsonContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
 
                 var Endpoint = string.Format("/vendor/{0}/contract-audit/", vendorID);
@@ -239,7 +244,7 @@ namespace ConsoleApp1.Controller
             }
         }
 
-        public async Task<int> CreateContractAudit(int vendorID, string open_date)
+        public async Task<int> CreateContractAudit(int vendorID, int managerId, int contractId, string open_date)
         {
             Models.ContractAudit contractAudit = new Models.ContractAudit()
             {
@@ -247,12 +252,12 @@ namespace ConsoleApp1.Controller
                 inflow_type = "internal",
                 contract_type = "new_grand_open",
                 contract_date = DateTime.Today.ToString("yyyy-MM-dd"),
-                contract_manager = 588,
+                contract_manager = managerId,
                 is_requested_first_onboarding = true,
                 is_requested_template_menu = true,
                 commission_contract_set = new Contract[] {
                     new Contract{
-                        id = 11255
+                        id = contractId
                     }
                 },
                 zero_commission_contract_set= new Contract[] {},
@@ -272,7 +277,7 @@ namespace ConsoleApp1.Controller
             }
         }
 
-        public async Task<int> UpdateContractAudit(int vendorID, int contractID, int v, string open_date)
+        public async Task<int> UpdateContractAudit(int vendorID, int contractID, string open_date)
         {
             ContractAuditPatch contractAuditPatch = new ContractAuditPatch()
             {

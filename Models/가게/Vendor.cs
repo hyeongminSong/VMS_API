@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace ConsoleApp1.Models
 {
@@ -16,14 +14,55 @@ namespace ConsoleApp1.Models
         public string name { get; set; }
         public string category_type { get; set; }
     }
+
+    public class BillingEntityInfo
+    {
+        public string bank_account { get; set; }
+        public bool is_active { get; set; }
+        public string staff_modified_datetime { get; set; }
+        public string bill_recv_email { get; set; }
+        public string bank_code { get; set; }
+        public string bank_account_owner_name { get; set; }
+        public string billing_entity_type { get; set; }
+        public string default_billing_cycle { get; set; }
+        public string salesforce_id { get; set; }
+        public string salesforce_address { get; set; }
+        public string shipping_address { get; set; }
+        public string shipping_address_detail { get; set; }
+        public bool is_subscribing_invoice { get; set; }
+        public string memo { get; set; }
+        public int created_by { get; set; }
+        public int modified_by { get; set; }
+        public int? bill_recv_address { get; set; }
+    }
     public class Vendor
     {
         public string name { get; set; }
         public Company company { get; set; }
+        public Franchise franchise { get; set; }
+        public BillingEntityInfo billing_entity_info { get; set; }
+        public List<string> order_methods { get; set; }
+        public List<string> payment_methods { get; set; }
+        public string phone_number { get; set; }
+        public bool is_below_minimum_order_available { get; set; }
+        public bool is_test_vendor { get; set; }
+        public string business_type { get; set; }
+        public string inflow_type { get; set; }
+        public string vertical_type { get; set; }
         public AddressInfo vendor_address { get; set; }
-        public string vertical_type {  get; set; }
-        public string business_type {  get; set; }
         public string license_number { get; set; }
+        public int takeout_minimum_minutes { get; set; }
+        public List<object> category_set { get; set; }
+        public List<object> partner_corporation_set { get; set; }
+        public string custom_detailed_address { get; set; }
+        public DateTime new_mark_date { get; set; }
+        public string one_dish_offline_reason { get; set; }
+        public string delivery_district_comment { get; set; }
+        public DateTime additional_charged_date { get; set; }
+        public string menu_leaflet_comment { get; set; }
+        public string competitor_type { get; set; }
+        public string competitor_id { get; set; }
+        public bool has_liquor_sales_qualification { get; set; }
     }
 
     public class termination
@@ -36,6 +75,6 @@ namespace ConsoleApp1.Models
         public int company_id { get; set; }
         public string company_number { get; set; }
         public int[] vendor_ids { get; set; }
-        public termination termination { get; set;}
+        public termination termination { get; set; }
     }
 }

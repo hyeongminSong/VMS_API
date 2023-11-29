@@ -130,7 +130,12 @@ namespace ConsoleApp1.Controller
             }
             public async Task<JObject> CreateVendorReceiver(Models.Vendor CreateVendorObj)
             {
-                string jsonString = JsonConvert.SerializeObject(CreateVendorObj);
+                var settings = new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    DefaultValueHandling = DefaultValueHandling.Ignore
+                };
+                string jsonString = JsonConvert.SerializeObject(CreateVendorObj, settings);
                 var jsonContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
 
                 var Endpoint = "/vendor/";
@@ -166,7 +171,12 @@ namespace ConsoleApp1.Controller
             }
             public async Task<JObject> UpdateVendorReceiver(int vendorID, Object UpdateVendorObj)
             {
-                string jsonString = JsonConvert.SerializeObject(UpdateVendorObj);
+                var settings = new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    DefaultValueHandling = DefaultValueHandling.Ignore
+                };
+                string jsonString = JsonConvert.SerializeObject(UpdateVendorObj, settings);
                 var jsonContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
 
                 var Endpoint = string.Format("/vendor/{0}/", vendorID);

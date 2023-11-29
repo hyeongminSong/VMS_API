@@ -4,7 +4,9 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using static ConsoleApp1.Controller.CompanyController;
@@ -138,20 +140,63 @@ namespace ConsoleApp1
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 // 가게 등록 TEST
-                int companyID = await new CompanyController(config).GetCompanyID("888-64-88888");
-                AddressInfo addressInfo = await new VendorController(config).GetVendorAddressInfo("경기도 고양시 일산동구 숲속마을로  50-58 보민프라자");
-                Console.WriteLine(await new VendorController(config).CreateVendor(new Vendor
+                string franchiseType = "franchise";
+                string contractName = "요기팩 기본 [제휴 5%]";
+                string orderType = "VD";
+                int managerId = 200;
+
+                CompanyController companyController = new CompanyController(config);
+                FranchisesController franchisesController = new FranchisesController(config);
+                VendorController vendorController = new VendorController(config);
+                CommissionController commissionController = new CommissionController(config);
+                ContractAuditController contractAuditController = new ContractAuditController(config);
+
+                int companyID = await companyController.GetCompanyID("888-64-88888");
+                int franchisesID = await franchisesController.GetFranchisesID(false, "CU");
+                AddressInfo addressInfo = await vendorController.GetVendorAddressInfo("경기도 고양시 일산동구 숲속마을로  50-58 보민프라자");
+
+                JObject vendorObj = await vendorController.CreateVendor(new Vendor
                 {
-                    name = "API로만든가게3",
+                    name = "API로만든가게" + DateTime.Now.ToString("MMddHHmmss"),
                     company = new Models.Company
                     {
                         id = companyID
                     },
+                    franchise = new Franchise { id = franchisesID },
                     vendor_address = addressInfo,
                     vertical_type = "restaurant",
                     business_type = "no_info",
                     license_number = "20230260108"
-                }));
+                });
+                Console.WriteLine(vendorObj);
+
+                int vendorId = (int)vendorObj["id"];
+
+                int billingTypeID = await vendorController.GetVendorBillingEntities(vendorId, franchiseType);
+                int commissionID = await commissionController.GetCommissionID(true, orderType, franchisesID, contractName);
+
+                //int vendor_id, int billingTypeID, int commissionID, bool is_alliance, string franchiseType, string start_date
+                int createContractID = await commissionController.AddCommissionContract(
+                    vendorId, billingTypeID, commissionID, true,
+                    "indirect", DateTime.Today.AddDays(1).ToString("yyyy-MM-dd"));
+
+                
+                int createContractAuditId = await contractAuditController.CreateContractAudit(vendorId, managerId, createContractID,
+                    DateTime.Today.AddDays(10).ToString("yyyy-MM-dd"));
+
+                //세일즈 심사 승인 API
+                Console.WriteLine(contractAuditController.RequestSalesApprove(vendorId, createContractAuditId));
+
+                //계약서 영업 개시일 업데이트 API
+                Console.WriteLine(contractAuditController.UpdateContractAudit(vendorId, createContractAuditId,
+                    DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")));
+
+                //사장님 승인 요청 API
+                Console.WriteLine(await contractAuditController.RequestOwnerApprove(vendorId, createContractAuditId));
+
+
+
+
 
 
                 ////////////////////////////////////////////////////////////////////////////////////////////////////

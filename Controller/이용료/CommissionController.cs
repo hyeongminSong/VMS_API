@@ -15,30 +15,26 @@ namespace ConsoleApp1.Controller
         private static HttpClient _httpClient;
         public CommissionController(Config config)
         {
-            _httpClient = new HttpClient(new HttpClientHandler
-            {
-                MaxConnectionsPerServer = 20 // 특정 도메인에 대한 최대 동시 커넥션 수를 20으로 설정
-            })
+            _httpClient = new HttpClient
             {
                 BaseAddress = new Uri(config.URL)
             };
             _httpClient.DefaultRequestHeaders.Add("accept", "application/json");
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {config.Token}");
         }
-        
+
         private class CommissionID
         {
             public async Task<JArray> GetCommissionIDReceiver(bool is_alliance, string order_type, int franchisesID, string commissionName)
             {
                 Dictionary<string, string> parameters = new Dictionary<string, string>
-        {
-            {"is_alliance", is_alliance.ToString() },
-                { "order_type", order_type },
-                { "franchise_id", franchisesID.ToString() },
-                { "type", order_type },
-                { "name", commissionName }
-            // Add more parameters as needed
-        };
+                {
+                    {"is_alliance", is_alliance.ToString() },
+                    { "order_type", order_type },
+                    { "franchise_id", franchisesID.ToString() },
+                    { "type", order_type },
+                    { "name", commissionName }
+                };
                 var Endpoint = "/commission/";
                 string queryString = QueryStringBuilder.BuildQueryString(parameters);
                 Endpoint += queryString;
@@ -70,17 +66,22 @@ namespace ConsoleApp1.Controller
                     }
                 }
             }
-            
+
         }
 
         private class CommissionContract
         {
             public async Task<JObject> AddCommissionContractReceiver(Models.CommissionContract commissionContract)
             {
-                var Endpoint = "/commission-contract/";
-
-                string jsonString = JsonConvert.SerializeObject(commissionContract);
+                var settings = new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    DefaultValueHandling = DefaultValueHandling.Ignore
+                };
+                string jsonString = JsonConvert.SerializeObject(commissionContract, settings);
                 var jsonContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
+
+                var Endpoint = "/commission-contract/";
 
                 using (var requestMessage = new HttpRequestMessage(new HttpMethod("POST"), Endpoint)
                 {
@@ -98,7 +99,7 @@ namespace ConsoleApp1.Controller
                             else
                             {
                                 Console.WriteLine($"Response status: {response.StatusCode}");
-                                throw new Exception("fail");
+                                return null;
                             }
                     }
                     catch (Exception ex)
@@ -108,7 +109,7 @@ namespace ConsoleApp1.Controller
                     }
             }
         }
-        
+
 
         public async Task<int> GetCommissionID(bool is_alliance, string order_type, int franchisesID, string commissionName)
         {
