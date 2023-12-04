@@ -55,7 +55,7 @@ namespace ConsoleApp1.Models
         };
             string pattern = @"^(?<sido>" + string.Join("|", sido_dictionary.Values.Union(sido_dictionary.Keys)) + ")" +
                 "(?<sigugun>.+구|.+시|.+군)" +
-                "(?<dongmyun>.+로|.+길)?" +
+                "(?<dongmyun>.+길|.+로)?" +
                 "(?<ri>.+리)?"+
                 "(?<detail>.+)?";
             Match match = Regex.Match(address, pattern);

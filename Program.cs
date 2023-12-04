@@ -7,6 +7,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Remoting.Messaging;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using static ConsoleApp1.Controller.CompanyController;
@@ -64,7 +65,7 @@ namespace ConsoleApp1
                 /*Username = "heejin.park",
                 Password = "qkrgmlwls1106!",*/
                 Username = "hyeongmin.song",
-                Password = "q1w2e3r$$",               
+                Password = "q1w2e3r$$",
                 Service_name = "VMS"
             };
 
@@ -74,17 +75,23 @@ namespace ConsoleApp1
             Config config = new Config(url);
             config = await new TokenController(config, user).GetAccessToken();
 
+            CompanyController companyController = new CompanyController(config);
+            FranchisesController franchisesController = new FranchisesController(config);
+            VendorController vendorController = new VendorController(config);
+            CommissionController commissionController = new CommissionController(config);
+            ContractAuditController contractAuditController = new ContractAuditController(config);
+
             try
             {
-                Console.WriteLine(config.Token);
+                Console.WriteLine("Bearer " + config.Token);
                 //Console.WriteLine(await new VendorController(config).GetVendor(1001376));
-
+                int vendorID = 1004012;
 
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
-                /*//카테고리 객체 호출 API
-                category_set categoryToken = await new VendorController(config).GetCategoryToken("야식");
+                //카테고리 객체 호출 API
+                category_set categoryToken = await vendorController.GetCategoryToken("야식");
                 //기등록 가게 조회 API
-                JObject vendorObj = await new VendorController(config).GetVendor(1001201);
+                JObject vendorObj = await vendorController.GetVendor(vendorID);
                 //기등록 가게 -> 기등록 카테고리 Obj 저장
                 JArray categoryArr = (JArray)vendorObj["category_set"];
                 //기등록 카테고리 Obj -> 카테고리 객체 리스트 변경
@@ -99,10 +106,10 @@ namespace ConsoleApp1
                 Console.WriteLine(categoryTokenList.ToArray());
 
                 //가게 기본 정보 업데이트 API
-                await new VendorController(config).UpdateVendor(1001201, new VendorCategoryUpdate()
+                Console.WriteLine(await vendorController.UpdateVendor(vendorID, new Vendor()
                 {
-                    category_set = categoryTokenList.ToArray()
-                });*/
+                    category_set = categoryTokenList
+                }));
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -140,20 +147,15 @@ namespace ConsoleApp1
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 // 가게 등록 TEST
+                /*
                 string franchiseType = "franchise";
                 string contractName = "요기팩 기본 [제휴 5%]";
                 string orderType = "VD";
                 int managerId = 200;
 
-                CompanyController companyController = new CompanyController(config);
-                FranchisesController franchisesController = new FranchisesController(config);
-                VendorController vendorController = new VendorController(config);
-                CommissionController commissionController = new CommissionController(config);
-                ContractAuditController contractAuditController = new ContractAuditController(config);
-
                 int companyID = await companyController.GetCompanyID("888-64-88888");
                 int franchisesID = await franchisesController.GetFranchisesID(false, "CU");
-                AddressInfo addressInfo = await vendorController.GetVendorAddressInfo("경기도 고양시 일산동구 숲속마을로  50-58 보민프라자");
+                AddressInfo addressInfo = await vendorController.GetAddressInfo("경기도 고양시 일산동구 숲속마을로  50-58 보민프라자");
 
                 JObject vendorObj = await vendorController.CreateVendor(new Vendor
                 {
@@ -193,17 +195,62 @@ namespace ConsoleApp1
 
                 //사장님 승인 요청 API
                 Console.WriteLine(await contractAuditController.RequestOwnerApprove(vendorId, createContractAuditId));
-
-
-
-
-
-
+                */
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+                ////////////////////////////////////////////////////////////////////////////////////////////////////
+                //사업자 정보 등록 TEST
+                /*string path = "C:\\Users\\A202111078\\Desktop\\GSTHEFRESH-파주와동점 사업자등록증.pdf.gpg";
 
+                Console.WriteLine(await companyController.CreateCompanyFiles(240, 3, path));
 
+                string companyNumber = "611-11-64794";
+                string companyName = "씨유 합천삼가점";
+                string companyEngName = "zzz";
+                string corpName = "";
+                string corpEngName = "";
+                string address = "경상남도 합천군 삼가1로 97";
+                string addressDetail = "";
+                string representative = "이경선";
+                string phone = "01035678223";
+                string businessType = "ZZZZZ";
+                // 법인 -> 주주명부, 개인 -> 여
+                string proprietorVerifiMethod = "여";
 
+                JObject InquiryCompanyInfoObj = await companyController.GetInquiryCompanyInfo(companyNumber);
+                string companyNumberCode = (string)InquiryCompanyInfoObj["company_number_code"];
+                string companyStatus = (string)InquiryCompanyInfoObj["company_status"];
+                string companyType = (string)InquiryCompanyInfoObj["company_type"];
+
+                AddressInfo addressInfo = await vendorController.GetAddressInfo(address, addressDetail);          
+                //Console.WriteLine(await companyController.GetCompanyID(companyNumber));
+                PrincipalCompany principalCompanyObj = new PrincipalCompany
+                {
+                    company_number = companyNumber,
+                    company_number_code = companyNumberCode,
+                    company_status = companyStatus,
+                    business_type = businessType,
+                    name = companyName,
+                    name_eng = companyEngName,
+                    corp_name = corpName,
+                    corp_name_eng = corpEngName,
+                    address = addressInfo,
+                    representative_set = new List<Representative> { new Representative { name = representative } },
+                    corp_phone = phone,
+                    proprietor_verifi_method = proprietorVerifiMethod,
+                };
+
+                //비영리법인
+                if (companyType == "non_profit_corp")
+                {
+                    principalCompanyObj.estimated_purpose = "자선";
+                    principalCompanyObj.estimated_purpose_file_type = "정관";
+                }
+
+                //Console.WriteLine(await companyController.CreatePrincipalCompany(principalCompanyObj));
+                Console.WriteLine(await companyController.UpdatePrincipalCompany(241, principalCompanyObj));*/
+
+                ////////////////////////////////////////////////////////////////////////////////////////////////////
                 Console.WriteLine(config.Token);
 
 

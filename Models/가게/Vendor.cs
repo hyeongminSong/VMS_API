@@ -4,10 +4,10 @@ using Newtonsoft.Json;
 
 namespace ConsoleApp1.Models
 {
-    public class VendorCategoryUpdate
+/*    public class VendorCategoryUpdate
     {
         public category_set[] category_set { get; set; }
-    }
+    }*/
     public class category_set
     {
         public int id { get; set; }
@@ -52,7 +52,7 @@ namespace ConsoleApp1.Models
         public AddressInfo vendor_address { get; set; }
         public string license_number { get; set; }
         public int takeout_minimum_minutes { get; set; }
-        public List<object> category_set { get; set; }
+        public List<category_set> category_set { get; set; }
         public List<object> partner_corporation_set { get; set; }
         public string custom_detailed_address { get; set; }
         public DateTime new_mark_date { get; set; }

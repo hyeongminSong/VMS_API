@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
-using System.Reflection.Emit;
 
 namespace ConsoleApp1.Controller
 {
@@ -59,7 +58,7 @@ namespace ConsoleApp1.Controller
         }
         private class VendorAddress
         {
-            public async Task<JObject> GetVendorAddressReceiver(string addressKeyword)
+            public async Task<JObject> GetAddressReceiver(string addressKeyword)
             {
                 Dictionary<string, string> parameters = new Dictionary<string, string>
         {
@@ -211,6 +210,60 @@ namespace ConsoleApp1.Controller
                 }
             }
 
+            public async Task<JObject> CreateVendorFilesReceiver(int vendorID, string imageType, string filePath)
+            {
+                /*
+                 logo- Vendor 로고 이미지
+                new_logo- New logo 이미지
+                curation- Vendor 큐레이션 이미지
+                background- Vendor 뒷배경 썸네일
+                leaflet- 광고 전단지
+                background1- Vendor 뒷배경 이미지1
+                background2- Vendor 뒷배경 이미지2
+                background3- Vendor 뒷배경 이미지3
+                background4- Vendor 뒷배경 이미지4
+                sales_registered- 영업 신고증
+                delivery_district- 배달지역 참고이미지
+                 */
+                var formData = new MultipartFormDataContent
+                {
+                    { new StringContent(imageType.ToString()), "image_type" },
+                    { new ByteArrayContent(System.IO.File.ReadAllBytes(filePath)), "file_path", System.IO.Path.GetFileName(filePath) },
+                    { new StringContent(vendorID.ToString()) , "principal_company" }
+                };
+
+                var Endpoint = string.Format("/vendor/{0}/vendorfiles/", vendorID);
+
+                using (var requestMessage = new HttpRequestMessage(new HttpMethod("POST"), Endpoint)
+                {
+                    Content = formData
+                })
+                {
+                    try
+                    {
+                        using (var response = await _httpClient.SendAsync(requestMessage))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var contentString = await response.Content.ReadAsStringAsync();
+                                return JObject.Parse(contentString);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Response status: {response.StatusCode}");
+                                return null;
+                            }
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"Request error: {ex.Message}");
+                        // 예외 처리를 위한 로직 추가
+                        return null;
+                    }
+                }
+            }
+
 
         }
 
@@ -292,16 +345,16 @@ namespace ConsoleApp1.Controller
                 return 0;
             }*/
         }
-        public async Task<int> UpdateVendor(int vendorID, Object obj)
+        public async Task<JObject> UpdateVendor(int vendorID, Object obj)
         {
             JObject UpdateVendorObj = await new Vendor().UpdateVendorReceiver(vendorID, obj);
-            return 0;
+            return UpdateVendorObj;
         }
-        public async Task<AddressInfo> GetVendorAddressInfo(string addressKeyword)
+        public async Task<AddressInfo> GetAddressInfo(string addressKeyword, string addressDetailed)
         {
             //return await new VendorAddress().GetVendorAddressReceiver(addressKeyword);
             string[] addressToken = new GetAddressItem().GetAddressToken(addressKeyword);
-            JObject GetVendorAddressObj = await new VendorAddress().GetVendorAddressReceiver(addressKeyword);
+            JObject GetVendorAddressObj = await new VendorAddress().GetAddressReceiver(addressKeyword);
             JToken targetItem = GetVendorAddressObj["items"].Count() == 1
                 ? GetVendorAddressObj["items"].First() :
                 GetVendorAddressObj["items"]
@@ -325,7 +378,7 @@ namespace ConsoleApp1.Controller
                     admin_detailed_address = (string)targetItem["admin"]["detail"],
                     law_detailed_address = (string)targetItem["law"]["detail"],
                     road_detailed_address = (string)targetItem["road"]["detail"],
-                    custom_detailed_address = ""
+                    custom_detailed_address = addressDetailed
                 };
                 return addressInfo;
             }
@@ -349,6 +402,11 @@ namespace ConsoleApp1.Controller
             {
                 return 0;
             }
+        }
+        public async Task<JObject> CreateVendorFiles(int vendorID, string imageType, string filePath)
+        {
+            JObject createVendorFilesObj = await new Vendor().CreateVendorFilesReceiver(vendorID, imageType, filePath);
+            return createVendorFilesObj;
         }
     }
 }

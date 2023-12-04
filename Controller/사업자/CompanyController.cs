@@ -1,4 +1,5 @@
 ﻿using ConsoleApp1.Models;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -6,6 +7,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+
+
 
 namespace ConsoleApp1.Controller
 {
@@ -24,13 +27,13 @@ namespace ConsoleApp1.Controller
 
         public class Company
         {
-            public async Task<JObject> GetCompanyIDReceiver(string companyNumber)
+            public async Task<JObject> GetCompanyReceiver(string companyNumber)
             {
                 Dictionary<string, string> parameters = new Dictionary<string, string>
-        {
-            { "company_number", companyNumber },
-            // Add more parameters as needed
-        };
+                {
+                    { "company_number", companyNumber },
+                    // Add more parameters as needed
+                };
                 var Endpoint = "/companies/";
 
                 string queryString = QueryStringBuilder.BuildQueryString(parameters);
@@ -62,17 +65,190 @@ namespace ConsoleApp1.Controller
                     }
                 }
             }
-        }
 
-        public class PrincipalCompanies
-        {
+            public async Task<JObject> GetInquiryCompanyInfoReceiver(string companyNumber)
+            {
+                Dictionary<string, string> parameters = new Dictionary<string, string>
+                {
+                    { "company_number", companyNumber },
+                    // Add more parameters as needed
+                };
+                var Endpoint = "/principal-companies/inquiry-cmpno/";
 
+                string queryString = QueryStringBuilder.BuildQueryString(parameters);
+                Endpoint += queryString;
+
+                using (var requestMessage = new HttpRequestMessage(new HttpMethod("GET"), Endpoint))
+                {
+                    try
+                    {
+                        using (var response = await _httpClient.SendAsync(requestMessage))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var contentString = await response.Content.ReadAsStringAsync();
+                                return JObject.Parse(contentString);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Response status: {response.StatusCode}");
+                                return null;
+                            }
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"Request error: {ex.Message}");
+                        // 예외 처리를 위한 로직 추가
+                        return null;
+                    }
+                }
+            }
+            public async Task<JObject> CreatePrincipalCompanyReceiver(PrincipalCompany principalCompanyObj)
+            {
+                var settings = new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    DefaultValueHandling = DefaultValueHandling.Ignore
+                };
+                string jsonString = JsonConvert.SerializeObject(principalCompanyObj, settings);
+                var jsonContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
+
+                var Endpoint = "/principal-companies/";
+
+                using (var requestMessage = new HttpRequestMessage(new HttpMethod("POST"), Endpoint)
+                {
+                    Content = jsonContent
+                })
+                {
+                    try
+                    {
+                        using (var response = await _httpClient.SendAsync(requestMessage))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var contentString = await response.Content.ReadAsStringAsync();
+                                return JObject.Parse(contentString);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Response status: {response.StatusCode}");
+                                return null;
+                            }
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"Request error: {ex.Message}");
+                        // 예외 처리를 위한 로직 추가
+                        return null;
+                    }
+                }
+            }
+            public async Task<JObject> UpdatePrincipalCompanyReceiver(int companyID, PrincipalCompany principalCompanyObj)
+            {
+                var Endpoint = string.Format("/principal-companies/{0}/", companyID);
+
+                var settings = new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    DefaultValueHandling = DefaultValueHandling.Ignore
+                };
+                string jsonString = JsonConvert.SerializeObject(principalCompanyObj, settings);
+                var jsonContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
+
+                using (var requestMessage = new HttpRequestMessage(new HttpMethod("PATCH"), Endpoint)
+                {
+                    Content = jsonContent
+                })
+                {
+                    try
+                    {
+                        using (var response = await _httpClient.SendAsync(requestMessage))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var contentString = await response.Content.ReadAsStringAsync();
+                                return JObject.Parse(contentString);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Response status: {response.StatusCode}");
+                                return null;
+                            }
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"Request error: {ex.Message}");
+                        // 예외 처리를 위한 로직 추가
+                        return null;
+                    }
+                }
+            }
+            public async Task<JObject> CreateCompanyFilesReceiver(int companyID, int fileType, string filePath)
+            {
+                /*
+                 * 개인
+                 * 1. 사업자등록증 file_type = 3
+                 * 2. 실소유자 확인 방법: 여
+                 * 법인(영리법인)
+                 * 1. 사업자등록증 file_type = 3 
+                 * 2. 실소유자 확인 방법: 주주명부 file_type = 4
+                 * 3. 인감증명서 file_type = 2
+                 * 4. 등기부등본 file_type = 1
+                 * 법인(비영리법인)
+                 * 1. 사업자등록증 file_type = 3
+                 * 2. 실소유자 확인 방법: 주주명부 file_type = 4
+                 * 3. 인감증명서 file_type = 2
+                 * 4. 등기부등본 file_type = 1
+                 * 5. 설립목적: 자선
+                 * 6. 설립목적 검증 서류: 정관 file_type = 8
+                 */
+                var formData = new MultipartFormDataContent
+                {
+                    { new StringContent(fileType.ToString()), "file_type" },
+                    { new ByteArrayContent(System.IO.File.ReadAllBytes(filePath)), "file_path", System.IO.Path.GetFileName(filePath) },
+                    { new StringContent(companyID.ToString()) , "principal_company" }
+                };
+
+                var Endpoint = "/companyfiles/";
+
+                using (var requestMessage = new HttpRequestMessage(new HttpMethod("POST"), Endpoint)
+                {
+                    Content = formData
+                })
+                {
+                    try
+                    {
+                        using (var response = await _httpClient.SendAsync(requestMessage))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var contentString = await response.Content.ReadAsStringAsync();
+                                return JObject.Parse(contentString);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Response status: {response.StatusCode}");
+                                return null;
+                            }
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"Request error: {ex.Message}");
+                        // 예외 처리를 위한 로직 추가
+                        return null;
+                    }
+                }
+            }
         }
 
         public async Task<int> GetCompanyID(string companyNumber)
         {
-            JObject GetVendorAddressObj = await new Company().GetCompanyIDReceiver(companyNumber);
-            JToken targetItem = GetVendorAddressObj["results"].First();
+            JObject GetCompanyObj = await new Company().GetCompanyReceiver(companyNumber);
+            JToken targetItem = GetCompanyObj["results"].First();
 
             if (targetItem != null)
             {
@@ -82,8 +258,34 @@ namespace ConsoleApp1.Controller
             {
                 return 0;
             }
-            
         }
 
+        public async Task<JObject> CreatePrincipalCompany(PrincipalCompany principalCompanyObj)
+        {
+            JObject CreatePrincipalCompanyObj = await new Company().CreatePrincipalCompanyReceiver(principalCompanyObj);
+            return CreatePrincipalCompanyObj;
+        }
+        public async Task<JObject> UpdatePrincipalCompany(int companyID, PrincipalCompany principalCompanyObj)
+        {
+            JObject UpdatePrincipalCompanyObj = await new Company().UpdatePrincipalCompanyReceiver(companyID, principalCompanyObj);
+            return UpdatePrincipalCompanyObj;
+        }
+        public async Task<JObject> GetInquiryCompanyInfo(string companyNumber)
+        {
+            JObject InquiryCompanyInfoObj = await new Company().GetInquiryCompanyInfoReceiver(companyNumber);
+            if (InquiryCompanyInfoObj != null)
+            {
+                return InquiryCompanyInfoObj;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public async Task<JObject> CreateCompanyFiles(int companyID, int fileType, string filePath)
+        {
+            JObject createCompanyFilesObj = await new Company().CreateCompanyFilesReceiver(companyID, fileType, filePath);
+            return createCompanyFilesObj;
+        }
     }
 }
