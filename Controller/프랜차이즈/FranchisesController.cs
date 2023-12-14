@@ -11,6 +11,7 @@ namespace ConsoleApp1.Controller
 {
     public class FranchisesController
     {
+        private readonly FranchisesID _franchisesID = new FranchisesID();
         private static HttpClient _httpClient;
         public FranchisesController(Config config)
         {
@@ -31,7 +32,7 @@ namespace ConsoleApp1.Controller
             { "name", franchisesName }
             // Add more parameters as needed
         };
-                var Endpoint = "/franchises/"; // Ticket Download EndPoint
+                var Endpoint = "/franchises/";
                 string queryString = QueryStringBuilder.BuildQueryString(parameters);
                 Endpoint += queryString;
 
@@ -50,6 +51,7 @@ namespace ConsoleApp1.Controller
                             else
                             {
                                 Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
                                 return null;
                             }
                         }
@@ -63,10 +65,11 @@ namespace ConsoleApp1.Controller
                 }
             }
         }
-        public async Task<int> GetFranchisesID(bool is_group, string franchisesName)
+        public async Task<JObject> GetFranchisesID(bool is_group, string franchisesName)
         {
-            JObject GetFranchisesIDObj = await new FranchisesID().GetFranchisesIDReceiver(is_group, franchisesName);
-            JToken targetItem = GetFranchisesIDObj["results"].
+            JObject GetFranchisesIDObj = await _franchisesID.GetFranchisesIDReceiver(is_group, franchisesName);
+            return GetFranchisesIDObj;
+            /*JToken targetItem = GetFranchisesIDObj["results"].
                             FirstOrDefault(item => ((string)item["name"]).EndsWith(franchisesName));
 
             if (targetItem != null)
@@ -76,7 +79,7 @@ namespace ConsoleApp1.Controller
             else
             {
                 return 0;
-            }
+            }*/
         }
     }
 }

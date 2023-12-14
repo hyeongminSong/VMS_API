@@ -14,6 +14,7 @@ namespace ConsoleApp1.Controller
 {
     public class CompanyController
     {
+        private readonly Company _company = new Company();
         private static HttpClient _httpClient;
         public CompanyController(Config config)
         {
@@ -27,6 +28,7 @@ namespace ConsoleApp1.Controller
 
         public class Company
         {
+            //사업자 검색
             public async Task<JObject> GetCompanyReceiver(string companyNumber)
             {
                 Dictionary<string, string> parameters = new Dictionary<string, string>
@@ -53,6 +55,7 @@ namespace ConsoleApp1.Controller
                             else
                             {
                                 Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
                                 return null;
                             }
                         }
@@ -65,7 +68,7 @@ namespace ConsoleApp1.Controller
                     }
                 }
             }
-
+            //사업자 정보 조회
             public async Task<JObject> GetInquiryCompanyInfoReceiver(string companyNumber)
             {
                 Dictionary<string, string> parameters = new Dictionary<string, string>
@@ -92,6 +95,7 @@ namespace ConsoleApp1.Controller
                             else
                             {
                                 Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
                                 return null;
                             }
                         }
@@ -104,6 +108,7 @@ namespace ConsoleApp1.Controller
                     }
                 }
             }
+            //사업자 정보 등록
             public async Task<JObject> CreatePrincipalCompanyReceiver(PrincipalCompany principalCompanyObj)
             {
                 var settings = new JsonSerializerSettings
@@ -133,6 +138,7 @@ namespace ConsoleApp1.Controller
                             else
                             {
                                 Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
                                 return null;
                             }
                         }
@@ -145,6 +151,7 @@ namespace ConsoleApp1.Controller
                     }
                 }
             }
+            //사업자 정보 수정
             public async Task<JObject> UpdatePrincipalCompanyReceiver(int companyID, PrincipalCompany principalCompanyObj)
             {
                 var Endpoint = string.Format("/principal-companies/{0}/", companyID);
@@ -174,6 +181,7 @@ namespace ConsoleApp1.Controller
                             else
                             {
                                 Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
                                 return null;
                             }
                         }
@@ -186,6 +194,7 @@ namespace ConsoleApp1.Controller
                     }
                 }
             }
+            //사업자정보 첨부자료 등록
             public async Task<JObject> CreateCompanyFilesReceiver(int companyID, int fileType, string filePath)
             {
                 /*
@@ -231,6 +240,7 @@ namespace ConsoleApp1.Controller
                             else
                             {
                                 Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
                                 return null;
                             }
                         }
@@ -245,10 +255,11 @@ namespace ConsoleApp1.Controller
             }
         }
 
-        public async Task<int> GetCompanyID(string companyNumber)
+        public async Task<JObject> GetCompanyID(string companyNumber)
         {
-            JObject GetCompanyObj = await new Company().GetCompanyReceiver(companyNumber);
-            JToken targetItem = GetCompanyObj["results"].First();
+            JObject GetCompanyObj = await _company.GetCompanyReceiver(companyNumber);
+            return GetCompanyObj;
+            /*JToken targetItem = GetCompanyObj["results"].First();
 
             if (targetItem != null)
             {
@@ -257,17 +268,17 @@ namespace ConsoleApp1.Controller
             else
             {
                 return 0;
-            }
+            }*/
         }
 
         public async Task<JObject> CreatePrincipalCompany(PrincipalCompany principalCompanyObj)
         {
-            JObject CreatePrincipalCompanyObj = await new Company().CreatePrincipalCompanyReceiver(principalCompanyObj);
+            JObject CreatePrincipalCompanyObj = await _company.CreatePrincipalCompanyReceiver(principalCompanyObj);
             return CreatePrincipalCompanyObj;
         }
         public async Task<JObject> UpdatePrincipalCompany(int companyID, PrincipalCompany principalCompanyObj)
         {
-            JObject UpdatePrincipalCompanyObj = await new Company().UpdatePrincipalCompanyReceiver(companyID, principalCompanyObj);
+            JObject UpdatePrincipalCompanyObj = await _company.UpdatePrincipalCompanyReceiver(companyID, principalCompanyObj);
             return UpdatePrincipalCompanyObj;
         }
         public async Task<JObject> GetInquiryCompanyInfo(string companyNumber)
@@ -284,7 +295,7 @@ namespace ConsoleApp1.Controller
         }
         public async Task<JObject> CreateCompanyFiles(int companyID, int fileType, string filePath)
         {
-            JObject createCompanyFilesObj = await new Company().CreateCompanyFilesReceiver(companyID, fileType, filePath);
+            JObject createCompanyFilesObj = await _company.CreateCompanyFilesReceiver(companyID, fileType, filePath);
             return createCompanyFilesObj;
         }
     }

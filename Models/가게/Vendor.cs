@@ -1,20 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 
 namespace ConsoleApp1.Models
 {
-/*    public class VendorCategoryUpdate
-    {
-        public category_set[] category_set { get; set; }
-    }*/
     public class category_set
     {
         public int id { get; set; }
         public string name { get; set; }
         public string category_type { get; set; }
     }
-
     public class BillingEntityInfo
     {
         public string bank_account { get; set; }
@@ -77,4 +71,25 @@ namespace ConsoleApp1.Models
         public int[] vendor_ids { get; set; }
         public termination termination { get; set; }
     }
+    public class VendorDescriptionInfo
+    {
+        public string description_method { get; set; }
+        public string access_path_mobile { get; set; }
+        public string access_path_web { get; set; }
+        public string description { get; set; }
+    }
+    public class ContactableEmployee
+    {
+        public string employee_type { get; set; }
+        public int vendor_id { get; set; }
+        public string name { get; set; }
+        public string phone { get; set; }
+        public bool is_agree_recv_required_info { get; set; }
+    }
+    public class MobileRelay
+    {
+        public bool is_active { get; set; }
+        public string phone_number { get; set; }
+    }
+
 }

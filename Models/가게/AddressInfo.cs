@@ -54,16 +54,16 @@ namespace ConsoleApp1.Models
             {"충북", "충청북도"}
         };
             string pattern = @"^(?<sido>" + string.Join("|", sido_dictionary.Values.Union(sido_dictionary.Keys)) + ")" +
-                "(?<sigugun>.+구|.+시|.+군)" +
-                "(?<dongmyun>.+길|.+로)?" +
+                "(?<sigugun>.+(시|구|군))" +
+                "(?<dongmyun>.+(로|길))?" +
                 "(?<ri>.+리)?"+
                 "(?<detail>.+)?";
             Match match = Regex.Match(address, pattern);
 
             if (match.Success)
             {
-                string[] resultArray = match.Groups.Cast<Group>().Skip(1)
-                    .Where(group => !string.IsNullOrEmpty(group.Value))
+                string[] resultArray = match.Groups.Cast<Group>()
+                    .Where(group => !string.IsNullOrEmpty(group.Value) && !char.IsDigit(group.Name.First()))
                     .Select(group => sido_dictionary.ContainsKey(group.ToString()) ?
                     sido_dictionary[group.ToString()] : Regex.Replace(group.Value, @"[^\w\d]", "").Trim()).ToArray();
                 return resultArray;

@@ -2,17 +2,16 @@
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using static ConsoleApp1.Controller.CompanyController;
 
 namespace ConsoleApp1.Controller
 {
     public class TerminationVendorController
     {
+        private readonly Termination _termination = new Termination();
         private static HttpClient _httpClient;
         public TerminationVendorController(Config config)
         {
@@ -26,6 +25,7 @@ namespace ConsoleApp1.Controller
 
         public class Termination
         {
+            //계약 사유 목록
             public async Task<JObject> GetTerminationReasonIDReceiver()
             {
                 var Endpoint = string.Format("/termination-reason/");
@@ -43,6 +43,7 @@ namespace ConsoleApp1.Controller
                             else
                             {
                                 Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
                                 return null;
                             }
                         }
@@ -53,14 +54,9 @@ namespace ConsoleApp1.Controller
                         // 예외 처리를 위한 로직 추가
                         return null;
                     }
-                    catch (JsonException ex)
-                    {
-                        Console.WriteLine($"JSON parsing error: {ex.Message}");
-                        // 예외 처리를 위한 로직 추가
-                        return null;
-                    }
                 }
             }
+            //벤더별 계약 해지 벌크 생성
             public async Task<JArray> CreateTerminationVendorReceiver(BulkCreateTerminationVendor bulkCreateTerminationVendor)
             {
                 string jsonString = JsonConvert.SerializeObject(bulkCreateTerminationVendor);
@@ -84,6 +80,7 @@ namespace ConsoleApp1.Controller
                             else
                             {
                                 Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
                                 return null;
                             }
                         }
@@ -94,20 +91,15 @@ namespace ConsoleApp1.Controller
                         // 예외 처리를 위한 로직 추가
                         return null;
                     }
-                    catch (JsonException ex)
-                    {
-                        Console.WriteLine($"JSON parsing error: {ex.Message}");
-                        // 예외 처리를 위한 로직 추가
-                        return null;
-                    }
                 }
             }
         }
 
-        public async Task<int> GetTerminationReasonID(string terminationReason)
+        public async Task<JObject> GetTerminationReasonID(string terminationReason)
         {
-            JObject GetTerminationReasonObj = await new Termination().GetTerminationReasonIDReceiver();
-            JToken targetItem = GetTerminationReasonObj["results"].
+            JObject GetTerminationReasonObj = await _termination.GetTerminationReasonIDReceiver();
+            return GetTerminationReasonObj;
+            /*JToken targetItem = GetTerminationReasonObj["results"].
                 FirstOrDefault(item => (string)item["reason"] == terminationReason);
 
             if (targetItem != null)
@@ -117,10 +109,10 @@ namespace ConsoleApp1.Controller
             else
             {
                 return 0;
-            }
+            }*/
         }
 
-        public async Task CreateTerminationVendor(int companyID, string companyNumber, int vendorID,
+        public async Task<JArray> CreateTerminationVendor(int companyID, string companyNumber, int vendorID,
             int terminationReasonID, string terminationDate)
         {
             BulkCreateTerminationVendor bulkCreateTerminationVendor = new BulkCreateTerminationVendor()
@@ -134,7 +126,8 @@ namespace ConsoleApp1.Controller
                     termination_date = terminationDate
                 }
             };
-            await new Termination().CreateTerminationVendorReceiver(bulkCreateTerminationVendor);
+            JArray CreateTerminationVendorObj = await _termination.CreateTerminationVendorReceiver(bulkCreateTerminationVendor);
+            return CreateTerminationVendorObj;
 
         }
     }

@@ -2,9 +2,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +10,10 @@ namespace ConsoleApp1.Controller
 {
     public class ContractAuditController
     {
+        private readonly ContractAudit _contractAudit = new ContractAudit();
+        private readonly SalesApprove _salesApprove = new SalesApprove();
+        private readonly OwnerApprove _ownerApprove = new OwnerApprove();
+
         private static HttpClient _httpClient;
         public ContractAuditController(Config config)
         {
@@ -26,6 +27,7 @@ namespace ConsoleApp1.Controller
 
         private class ContractAudit
         {
+            //계약 심사 요청
             public async Task<JObject> CreateContractAuditReceiver(int vendorID, Models.ContractAudit contractAudit)
             {
                 var settings = new JsonSerializerSettings
@@ -54,6 +56,7 @@ namespace ConsoleApp1.Controller
                             else
                             {
                                 Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
                                 return null;
                             }
                         }
@@ -64,14 +67,9 @@ namespace ConsoleApp1.Controller
                         // 예외 처리를 위한 로직 추가
                         return null;
                     }
-                    catch (JsonException ex)
-                    {
-                        Console.WriteLine($"JSON parsing error: {ex.Message}");
-                        // 예외 처리를 위한 로직 추가
-                        return null;
-                    }
                 }
             }
+            //계약 심사 수정
             public async Task<JObject> UpdateContractAuditReceiver(int vendorID, int contractID, ContractAuditPatch contractAuditPatch)
             {
                 string jsonString = JsonConvert.SerializeObject(contractAuditPatch);
@@ -95,6 +93,7 @@ namespace ConsoleApp1.Controller
                             else
                             {
                                 Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
                                 return null;
                             }
                         }
@@ -105,18 +104,13 @@ namespace ConsoleApp1.Controller
                         // 예외 처리를 위한 로직 추가
                         return null;
                     }
-                    catch (JsonException ex)
-                    {
-                        Console.WriteLine($"JSON parsing error: {ex.Message}");
-                        // 예외 처리를 위한 로직 추가
-                        return null;
-                    }
                 }
             }
         }
 
         private class SalesApprove
         {
+            //세일즈 심사 승인 요청
             public async Task<JObject> RequestSalesApproveReceiver(int vendorID, int contractID, ContractAuditSalesApprove contractSalesSalesApprove)
             {
                 string jsonString = JsonConvert.SerializeObject(contractSalesSalesApprove);
@@ -140,6 +134,7 @@ namespace ConsoleApp1.Controller
                             else
                             {
                                 Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
                                 return null;
                             }
                         }
@@ -150,17 +145,12 @@ namespace ConsoleApp1.Controller
                         // 예외 처리를 위한 로직 추가
                         return null;
                     }
-                    catch (JsonException ex)
-                    {
-                        Console.WriteLine($"JSON parsing error: {ex.Message}");
-                        // 예외 처리를 위한 로직 추가
-                        return null;
-                    }
                 }
             }
         }
         private class OwnerApprove
         {
+            //사장님 승인 요청
             public async Task<JObject> RequestOwnerApproveReceiver(int vendorID, int contractID, ContractAuditOwnerRequest contractAuditOwnerRequest)
             {
                 string jsonString = JsonConvert.SerializeObject(contractAuditOwnerRequest);
@@ -185,6 +175,7 @@ namespace ConsoleApp1.Controller
                             else
                             {
                                 Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
                                 return null;
                             }
                         }
@@ -195,25 +186,20 @@ namespace ConsoleApp1.Controller
                         // 예외 처리를 위한 로직 추가
                         return null;
                     }
-                    catch (JsonException ex)
-                    {
-                        Console.WriteLine($"JSON parsing error: {ex.Message}");
-                        // 예외 처리를 위한 로직 추가
-                        return null;
-                    }
                 }
             }
             
         }
-        public async Task<int> RequestSalesApprove(int vendorID, int contractID)
+        public async Task<JObject> RequestSalesApprove(int vendorID, int contractID)
         {
             ContractAuditSalesApprove contractSalesSalesApprove = new ContractAuditSalesApprove()
             {
                 contract_status = "sales_requested"
             };
 
-            JObject RequestSalesApproveObj = await new SalesApprove().RequestSalesApproveReceiver(vendorID, contractID, contractSalesSalesApprove);
-            JToken targetItem = RequestSalesApproveObj;                            
+            JObject RequestSalesApproveObj = await _salesApprove.RequestSalesApproveReceiver(vendorID, contractID, contractSalesSalesApprove);
+            return RequestSalesApproveObj;
+            /*JToken targetItem = RequestSalesApproveObj;                            
 
             if (targetItem != null)
             {
@@ -222,17 +208,18 @@ namespace ConsoleApp1.Controller
             else
             {
                 return 0;
-            }
+            }*/
         }
 
-        public async Task<int> RequestOwnerApprove(int vendorID, int contractID)
+        public async Task<JObject> RequestOwnerApprove(int vendorID, int contractID)
         {
             ContractAuditOwnerRequest contractAuditOwnerRequest = new ContractAuditOwnerRequest()
             {
                 contract_status = "sales_requested"
             };
-            JObject RequestOwnerApproveObj = await new OwnerApprove().RequestOwnerApproveReceiver(vendorID, contractID, contractAuditOwnerRequest);
-            JToken targetItem = RequestOwnerApproveObj;
+            JObject RequestOwnerApproveObj = await _ownerApprove.RequestOwnerApproveReceiver(vendorID, contractID, contractAuditOwnerRequest);
+            return RequestOwnerApproveObj;
+            /*JToken targetItem = RequestOwnerApproveObj;
 
             if (targetItem != null)
             {
@@ -241,10 +228,10 @@ namespace ConsoleApp1.Controller
             else
             {
                 return 0;
-            }
+            }*/
         }
 
-        public async Task<int> CreateContractAudit(int vendorID, int managerId, int contractId, string open_date)
+        public async Task<JObject> CreateContractAudit(int vendorID, int managerId, int contractId, string open_date)
         {
             Models.ContractAudit contractAudit = new Models.ContractAudit()
             {
@@ -264,8 +251,9 @@ namespace ConsoleApp1.Controller
                 additional_fee_set= new Contract[] { },
                 open_date = open_date
             };
-            JObject CreateContractAuditObj = await new ContractAudit().CreateContractAuditReceiver(vendorID, contractAudit);
-            JToken targetItem = CreateContractAuditObj;
+            JObject CreateContractAuditObj = await _contractAudit.CreateContractAuditReceiver(vendorID, contractAudit);
+            return CreateContractAuditObj;
+            /*JToken targetItem = CreateContractAuditObj;
 
             if (targetItem != null)
             {
@@ -274,18 +262,19 @@ namespace ConsoleApp1.Controller
             else
             {
                 return 0;
-            }
+            }*/
         }
 
-        public async Task<int> UpdateContractAudit(int vendorID, int contractID, string open_date)
+        public async Task<JObject> UpdateContractAudit(int vendorID, int contractID, string open_date)
         {
             ContractAuditPatch contractAuditPatch = new ContractAuditPatch()
             {
                 vendor = vendorID,
                 open_date = open_date
             };
-            JObject UpdateContractAuditObj = await new ContractAudit().UpdateContractAuditReceiver(vendorID, contractID, contractAuditPatch);
-            JToken targetItem = UpdateContractAuditObj;
+            JObject UpdateContractAuditObj = await _contractAudit.UpdateContractAuditReceiver(vendorID, contractID, contractAuditPatch);
+            return UpdateContractAuditObj;
+            /*JToken targetItem = UpdateContractAuditObj;
 
             if (targetItem != null)
             {
@@ -294,7 +283,7 @@ namespace ConsoleApp1.Controller
             else
             {
                 return 0;
-            }
+            }*/
         }
 
 

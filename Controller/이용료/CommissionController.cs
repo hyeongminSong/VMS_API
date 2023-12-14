@@ -12,6 +12,8 @@ namespace ConsoleApp1.Controller
 {
     public class CommissionController
     {
+        private readonly CommissionID _commissionID = new CommissionID();
+        private readonly CommissionContract _commissionContract = new CommissionContract();
         private static HttpClient _httpClient;
         public CommissionController(Config config)
         {
@@ -25,6 +27,7 @@ namespace ConsoleApp1.Controller
 
         private class CommissionID
         {
+            //이용료정보 조회
             public async Task<JArray> GetCommissionIDReceiver(bool is_alliance, string order_type, int franchisesID, string commissionName)
             {
                 Dictionary<string, string> parameters = new Dictionary<string, string>
@@ -54,6 +57,7 @@ namespace ConsoleApp1.Controller
                             else
                             {
                                 Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
                                 return null;
                             }
                         }
@@ -71,6 +75,7 @@ namespace ConsoleApp1.Controller
 
         private class CommissionContract
         {
+            //이용료계약정보 등록
             public async Task<JObject> AddCommissionContractReceiver(Models.CommissionContract commissionContract)
             {
                 var settings = new JsonSerializerSettings
@@ -99,22 +104,25 @@ namespace ConsoleApp1.Controller
                             else
                             {
                                 Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
                                 return null;
                             }
                     }
-                    catch (Exception ex)
+                    catch (HttpRequestException ex)
                     {
-                        Console.WriteLine($"HTTP request error: {ex.Message}");
-                        throw ex;
+                        Console.WriteLine($"Request error: {ex.Message}");
+                        // 예외 처리를 위한 로직 추가
+                        return null;
                     }
             }
         }
 
 
-        public async Task<int> GetCommissionID(bool is_alliance, string order_type, int franchisesID, string commissionName)
+        public async Task<JArray> GetCommissionID(bool is_alliance, string order_type, int franchisesID, string commissionName)
         {
-            JArray GetCommissionIDObj = await new CommissionID().GetCommissionIDReceiver(is_alliance, order_type, franchisesID, commissionName);
-            JToken targetItem = GetCommissionIDObj.
+            JArray GetCommissionIDObj = await _commissionID.GetCommissionIDReceiver(is_alliance, order_type, franchisesID, commissionName);
+            return GetCommissionIDObj;
+            /*JToken targetItem = GetCommissionIDObj.
                             FirstOrDefault(item => ((string)item["name"]).EndsWith(commissionName));
 
             if (targetItem != null)
@@ -124,10 +132,10 @@ namespace ConsoleApp1.Controller
             else
             {
                 return 0;
-            }
+            }*/
         }
 
-        public async Task<int> AddCommissionContract(int vendor_id, int billingTypeID,
+        public async Task<JObject> AddCommissionContract(int vendor_id, int billingTypeID,
             int commissionID, bool is_alliance, string franchiseType, string start_date)
         {
             Models.CommissionContract contract = new Models.CommissionContract()
@@ -140,15 +148,16 @@ namespace ConsoleApp1.Controller
                 commission_start_date = start_date
             };
 
-            JObject GetCommissionIDObj = await new CommissionContract().AddCommissionContractReceiver(contract);
-            if (GetCommissionIDObj != null)
+            JObject GetCommissionIDObj = await _commissionContract.AddCommissionContractReceiver(contract);
+            return GetCommissionIDObj;
+            /*if (GetCommissionIDObj != null)
             {
                 return (int)GetCommissionIDObj["id"];
             }
             else
             {
                 return 0;
-            }
+            }*/
         }
     }
 }
