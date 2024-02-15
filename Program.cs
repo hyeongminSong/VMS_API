@@ -51,27 +51,84 @@ namespace ConsoleApp1
                 string address = "서울특별시 동작구 서달로  123 GS25,흑석캐슬점,23층";
                 string addressDetail = "";
                 int managerId = 200;
+                string phone = "01040003416";
 
                 //변수 세팅(사업자)
-                string companyNumber = "495-11-02764";
+                //string companyNumber = "495-11-02764";
+                //TEST
+                string companyNumber = "333-74-33333"; 
+
                 string companyName = "지에스25(GS25) 흑석캐슬점";
                 string companyEngName = "TEMP";
                 string corpNumber = "";
                 string corpName = "";
                 string corpEngName = "TEMP";
                 string representative = "최연호";
-                string phone = "01040003416";
                 string businessType = "ZZZZZ";
                 string path = "C:\\Users\\A202111078\\Desktop\\픽업25-GS25범천자유점 사업자등록증.jpg.gpg";
 
                 //변수 세팅(가게)
-                string franchiseType = "franchise";
-                string commissionName = "요기팩 기본 [제휴 5%]";
+
+                Dictionary<string, string> verticalTypeMappings = new Dictionary<string, string>
+        {
+            { "음식점", "restaurant" },
+            { "잡화점", "grocery" },
+            { "퀵커머스", "dark_store" },
+        };
+
+                Dictionary<string, string> restaurantTypeMappings = new Dictionary<string, string>
+        {
+            { "0.제공하지 않음", "no_info" },
+            { "1.즉석판매제조가공업", "consignment_catering_service" },
+            { "2.휴게 음식점", "rest_restaurant" },
+            { "3.일반음식점", "ordinary_restaurant" },
+            { "4.제과점영업", "bakery" },
+            { "5.기타식품판매업", "other_food_sales" },
+            { "6.식육즉석판매가공업", "instant_meat_sale" },
+            { "7.식품제조가공업", "food_manufacturing" },
+            { "8.식육판매업", "butcher_shop" },
+            { "9.기타", "etc" }
+        };
+                Dictionary<string, string> franchiseTypeMappings = new Dictionary<string, string>
+        {
+            { "직영", "direct" },
+            { "가맹", "indirect" }
+        };
+
+
+                string vendorName = "픽업25-GS25흑석캐슬점";
+                string commissionName = "오이시VD";
                 string orderType = "VD";
-                string franchisesName = "픽업25";
+                string franchisesName = "오이시쿠나레모에모에큥";
+                string verticalType = verticalTypeMappings["음식점"];
+                string restaurantType = "";
+                restaurantType = string.IsNullOrEmpty(restaurantType) ? restaurantTypeMappings.Values.First() : restaurantTypeMappings["restaurantType"];
+                string licenseNumber = "";
+
+                string deliveryDistrictComment = "\"최소주문금액: 0원\r\n매장기준 읍/면/동: 0원\"";
+                ///////////////////////////////////////////////////////////
+                string openingDescriptionComment = "1. 평일주말 동일 : 00:00~23:30\r\n2. 휴무일 : 연중무휴";
+                string menuLeafletComment = "템플릿 메뉴 적용";
+
+                string restaurantDeliveryMethod = "SMS+GOWIN";
+
+                //계약 유형
+                string contractType = "제휴";
+                //프랜차이즈 타입
+                string franchiseType = "가맹";
+                franchiseType = franchiseTypeMappings[franchiseType];
+                //정산 주체
+                //string settlement = "그룹([HQ](주)GS리테일_GS25픽업)";
+                string settlement = "프랜차이즈(오이시쿠나레모에모에큥)";
+
+
+
+
+
+
 
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
-                //Console.WriteLine(await new VendorController(config).GetVendor(1001376));
+                //카테고리
                 /*int vendorID = 1243716;
                 string[] category_arr = { "고기/구이" };
                 List<string> category_list = category_arr.ToList();
@@ -117,34 +174,10 @@ namespace ConsoleApp1
                     category_set = categoryTokenList
                 }));*/
 
-                //영업시간 텍스트 입력
-                /*JArray vendorDescriptionInfoObj = await vendorController.GetVendorDescriptionsInfo(vendorID);
-                JToken targetItem = vendorDescriptionInfoObj
-                    .FirstOrDefault(item => (string)item["description_type"] == "opening_date");
-                if (targetItem != null)
-                {
-                    int descriptionID = (int)targetItem["id"];
-                    Console.WriteLine(await vendorController.UpdateVendorDescriptionsInfo(vendorID, descriptionID, "API로 바꾼 영업시간 텍스트"));
-                }*/
-
-                //주문전달수단
-                /*Console.WriteLine(await vendorController.GetVendorContactableEmployees(vendorID));
-                JObject vendorContactableEmployeesObj = await vendorController.GetVendorContactableEmployees(vendorID);
-                string[] contactableEmployeesArr = vendorContactableEmployeesObj["results"]
-                    .Select(token => token["phone"].ToString()).ToArray();
-                if (!contactableEmployeesArr.Contains(phone))
-                {
-                    //운영자 추가
-                    Console.WriteLine(await vendorController.CreateVendorContactableEmployees(vendorID, phone));
-                    //주문전달수단(SMS) 추가
-                    Console.WriteLine(await vendorController.UpdateVendorMobileRelayMethods(vendorID, phone));
-                }*/
-
                 /*Console.WriteLine(await vendorController.UpdateVendor(vendorID, new Vendor()
                 {
                     competitor_id = "메뉴 어쩌구 CM"
                 }));*/
-                //Console.WriteLine(await vendorController.CheckVendorDuplicateName("API로만든가게1129182745"));
 
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -155,8 +188,8 @@ namespace ConsoleApp1
 
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
                 //사업자 정보 등록 TEST
-                                            
-               //One ID 등록
+
+                //One ID 등록
                 /*Representative representativeObj;
                 JObject getOneIDObj = await companyController.GetOneIDObj("sei.kim");
 
@@ -260,6 +293,9 @@ namespace ConsoleApp1
                 */
 
                 //가게 등록 개발
+                JObject vendorObj;
+                int vendorID;
+
                 JObject GetCompanyObj = await companyController.GetCompanyID(companyNumber);
                 int companyID = GetCompanyObj["results"].HasValues ? (int)GetCompanyObj["results"].First()["company_set"].First()["id"] : 0;
 
@@ -271,48 +307,103 @@ namespace ConsoleApp1
                 JObject addressInfoObj = await vendorController.GetAddressInfoObj(address);
                 AddressInfo addressInfo = new GetAddressItem().GetAddressInfo(addressInfoObj, address, addressDetail);
 
-                JObject vendorObj = await vendorController.CreateVendor(new Vendor
+                JObject checkVendorDuplicateObj = await vendorController.CheckVendorDuplicateName(vendorName);
+                bool vendorExist = (bool)checkVendorDuplicateObj["is_duplicated"];
+
+                if (vendorExist == false)
                 {
-                    name = "API로만든가게" + DateTime.Now.ToString("MMddHHmmss"),
-                    company = new Company
+                    vendorObj = await vendorController.CreateVendor(new Vendor
                     {
-                        id = companyID
-                    },
-                    franchise = new Franchise { id = franchisesID },
-                    vendor_address = addressInfo,
-                    vertical_type = "restaurant",
-                    business_type = "no_info",
-                    license_number = string.Empty
-                });
+                        //name = "API로만든가게" + DateTime.Now.ToString("MMddHHmmss"),
+                        name = vendorName,
+                        company = new Company
+                        {
+                            id = companyID
+                        },
+                        franchise = new Franchise { id = franchisesID },
+                        vendor_address = addressInfo,
+                        vertical_type = verticalType,
+                        business_type = restaurantType,
+                        license_number = licenseNumber,
+                        delivery_district_comment = deliveryDistrictComment,
+                        menu_leaflet_comment = menuLeafletComment,
+
+                    });
+                    vendorID = (int)vendorObj["id"];
+                }
+                else
+                {
+                    JObject searchVendorFromNameObj = await vendorController.SearchVendorFromName(vendorName);
+                    vendorID = (int)searchVendorFromNameObj["results"].First["id"];
+                    vendorObj = await vendorController.UpdateVendor(vendorID, new Vendor
+                    {
+                        name = "API로만든가게" + DateTime.Now.ToString("MMddHHmmss"),
+                        //name = vendorName,
+                        company = new Company
+                        {
+                            id = companyID
+                        },
+                        franchise = new Franchise { id = franchisesID },
+                        vendor_address = addressInfo,
+                        vertical_type = verticalType,
+                        business_type = restaurantType,
+                        license_number = licenseNumber
+                    });
+                }
+
                 Console.WriteLine(vendorObj);
 
-                //가게 생성 후 이용료/계약서 등록
-                //int vendorId = 1001430;
+                //가게 등록 이후 추가 등록 작업
+                //int vendorID = 1001442;
+                JArray vendorDescriptionInfoObj = await vendorController.GetVendorDescriptionsInfo(vendorID);
+                int openingDescriptionID = (int)vendorDescriptionInfoObj
+                    .FirstOrDefault(item => (string)item["description_type"] == "opening_date")["id"];
 
-                /*//프랜차이즈 ID 저장
+                await vendorController.UpdateVendorDescriptionsInfo(vendorID, openingDescriptionID, openingDescriptionComment);
+
+                JObject vendorContactableEmployeesObj = await vendorController.GetVendorContactableEmployees(vendorID);
+                string[] contactableEmployeesArr = vendorContactableEmployeesObj["results"]
+                    .Select(token => token["phone"].ToString()).ToArray();
+                if (!contactableEmployeesArr.Contains(phone))
+                {
+                    //운영자 추가
+                    await vendorController.CreateVendorContactableEmployees(vendorID, phone);
+                    //주문전달수단(SMS) 추가
+                    await vendorController.UpdateVendorMobileRelayMethods(vendorID, phone);
+                    //주문전달수단(GOWIN) 추가
+                    if (restaurantDeliveryMethod.Contains("GOWIN"))
+                    {
+                        await vendorController.UpdateGowinRelayMethods(vendorID);
+                    }
+                }
+
+                //가게 생성 후 이용료/계약서 등록
+
+                //프랜차이즈 ID 저장
                 JObject getFranchisesObj = await franchisesController.GetFranchisesID(false, franchisesName);
                 JToken franchisesTargetItem = getFranchisesObj["results"].FirstOrDefault(item => ((string)item["name"]).EndsWith(franchisesName));
-                int franchisesID = getFranchisesObj.HasValues ? (int)franchisesTargetItem["id"] : 0;
+                //int franchisesID = getFranchisesObj.HasValues ? (int)franchisesTargetItem["id"] : 0;
 
                 //정산 주체 ID 저장
-                JArray vendorBillingEntityObj = await vendorController.GetVendorBillingEntities(vendorId);
+                JArray vendorBillingEntityObj = await vendorController.GetVendorBillingEntities(vendorID);
                 JToken billingTargetItem = vendorBillingEntityObj.
-                            FirstOrDefault(item => (string)item["billing_entity_type"] == franchiseType);
+                            FirstOrDefault(item => (string)item["billing_entity_description"] == settlement);
                 int billingTypeID = billingTargetItem.HasValues ? (int)billingTargetItem["id"] : 0;
 
                 //주문당 이용료 ID 저장
                 JArray getCommissionObj = await commissionController.GetCommissionID(true, orderType, franchisesID, commissionName);
                 JToken commissionTargetItem = getCommissionObj.
                             FirstOrDefault(item => ((string)item["name"]).EndsWith(commissionName));
+                /*JToken commissionTargetItem = getCommissionObj.
+                            FirstOrDefault(item => ((string)item["name"]).Contains("Test"));*/
                 int commissionID = commissionTargetItem.HasValues ? (int)commissionTargetItem["id"] : 0;
 
                 //주문당 이용료 등록
                 CommissionContract commissionContractObj = new CommissionContract()
                 {
-                    vendor = vendorId,
+                    vendor = vendorID,
                     commission = commissionID,
                     billing_entity_info = billingTypeID,
-                    is_alliance = true,
                     franchise_type = franchiseType,
                     commission_start_date = DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")
                 };
@@ -322,7 +413,7 @@ namespace ConsoleApp1
                 //계약서 생성
                 ContractAudit contractAudit = new ContractAudit()
                 {
-                    vendor = vendorId,
+                    vendor = vendorID,
                     inflow_type = "internal",
                     contract_type = "new_grand_open",
                     contract_date = DateTime.Today.ToString("yyyy-MM-dd"),
@@ -338,22 +429,22 @@ namespace ConsoleApp1
                     additional_fee_set = new Models.Contract[] { },
                     open_date = DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")
                 };
-                JObject createContractAuditObj = await contractAuditController.CreateContractAudit(vendorId, contractAudit);
+                JObject createContractAuditObj = await contractAuditController.CreateContractAudit(vendorID, contractAudit);
                 int createContractAuditId = createContractAuditObj.HasValues ? (int)createContractAuditObj["id"] : 0;
 
                 //세일즈 심사 승인 API
-                Console.WriteLine(contractAuditController.RequestSalesApprove(vendorId, createContractAuditId));
+                Console.WriteLine(contractAuditController.RequestSalesApprove(vendorID, createContractAuditId));
 
                 //계약서 영업 개시일 업데이트 API
-                Console.WriteLine(contractAuditController.UpdateContractAudit(vendorId, createContractAuditId,
-                    DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")));*/
+                Console.WriteLine(contractAuditController.UpdateContractAudit(vendorID, createContractAuditId,
+                    DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")));
 
                 //사장님 승인 요청 API
                 /*Console.WriteLine(await contractAuditController.RequestOwnerApprove(vendorId, createContractAuditId));*/
 
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-                
+
 
                 /*//티켓 첨부파일 등록
                 int ticket_id = 16477;

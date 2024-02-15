@@ -91,5 +91,13 @@ namespace ConsoleApp1.Models
         public bool is_active { get; set; }
         public string phone_number { get; set; }
     }
+    public class RelayMethod
+    {
+        public string method_type { get; set; }
+        public object relaydevice {  get; set; }
+        public List<object> contactableemployee_set { get; set; }
+        public bool is_active { get; set; }
+        public bool is_owner_using { get; set; }
+    }
 
 }

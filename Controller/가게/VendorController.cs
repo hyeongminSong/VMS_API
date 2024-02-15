@@ -108,13 +108,11 @@ namespace ConsoleApp1.Controller
         private class Vendor
         {
             //가게 검색(가게 상태 - 계약 완료)
-            /*public async Task<JObject> SearchVendorReceiver(string vendorName, string companyNumber)
+            public async Task<JObject> SearchVendorFromNameReceiver(string vendorName)
             {
                 Dictionary<string, string> parameters = new Dictionary<string, string>
                 {
                     { "name", vendorName },
-                    { "company_number", companyNumber },
-                    {"contract_status", "complete" }
                 };
                 var Endpoint = "/vendor/";
 
@@ -146,7 +144,7 @@ namespace ConsoleApp1.Controller
                         return null;
                     }
                 }
-            }*/
+            }
             //벤더 이름 중복 체크
             public async Task<JObject> CheckVendorDuplicateNameReceiver(string vendorName)
             {
@@ -505,7 +503,7 @@ namespace ConsoleApp1.Controller
                     }
                 }
             }
-            //주문전달수단 활성화 여부 관리
+            //모바일 주문전달수단 활성화 여부 관리
             public async Task<JObject> UpdateVendorMobileRelayMethodsReceiver(int vendorID, object UpdatUpdateVendorMobileRelayMethodsObj)
             {
                 var settings = new JsonSerializerSettings
@@ -548,6 +546,97 @@ namespace ConsoleApp1.Controller
                     }
                 }
             }
+
+            //주문전달수단 벌크 수정
+            public async Task<JArray> UpdateGowinRelayMethodsReceiver(int vendorID, List<RelayMethod> UpdateGowinRelayMethodsObjList)
+            {
+                /*var settings = new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    DefaultValueHandling = DefaultValueHandling.Ignore
+                };*/
+                
+                string jsonString = JsonConvert.SerializeObject(UpdateGowinRelayMethodsObjList);
+                //string jsonString = JsonConvert.SerializeObject(UpdateGowinRelayMethodsObjList, settings);
+                var jsonContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
+
+                var Endpoint = string.Format("/vendor/{0}/relay-methods/", vendorID);
+
+                using (var requestMessage = new HttpRequestMessage(new HttpMethod("PATCH"), Endpoint)
+                {
+                    Content = jsonContent
+                })
+                {
+                    try
+                    {
+                        using (var response = await _httpClient.SendAsync(requestMessage))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var contentString = await response.Content.ReadAsStringAsync();
+                                return JArray.Parse(contentString);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
+                                return null;
+                            }
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"Request error: {ex.Message}");
+                        // 예외 처리를 위한 로직 추가
+                        return null;
+                    }
+                }
+            }
+
+            
+                   
+
+
+
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="vendorID"></param>
+            /// <returns></returns>
+            public async Task<JArray> TESTReceiver(int vendorID)
+            {
+                var Endpoint = string.Format("/vendor/{0}/relay-methods/", vendorID);
+                using (var requestMessage = new HttpRequestMessage(new HttpMethod("GET"), Endpoint))
+                {
+                    try
+                    {
+                        using (var response = await _httpClient.SendAsync(requestMessage))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var contentString = await response.Content.ReadAsStringAsync();
+                                JArray result = JArray.Parse(contentString);
+                                Console.WriteLine(result); return result;
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
+                                return null;
+                            }
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"Request error: {ex.Message}");
+                        // 예외 처리를 위한 로직 추가
+                        return null;
+                    }
+                }
+            }
+
 
 
         }
@@ -634,25 +723,11 @@ namespace ConsoleApp1.Controller
         {
             JArray GetCategoryObj = await _category.GetCategoryReceiver();
             return GetCategoryObj;
-
-            /*JToken targetItem = GetCategoryObj.
-                            FirstOrDefault(item => (string)item["display_name"] == categoryName);
-
-            if (targetItem != null)
-            {
-                return new category_set
-                {
-                    id = (int)targetItem["id"],
-                    name = (string)targetItem["name"],
-                    category_type = (string)targetItem["category_type"]
-                };
-            }
-            else
-            {
-                return null;
-            }*/
         }
-
+        public async Task<JObject> SearchVendorFromName(string vendorName)
+        {
+            return await _vendor.SearchVendorFromNameReceiver(vendorName);
+        }
         public async Task<JObject> GetVendor(int vendorID)
         {
             return await _vendor.GetVendorReceiver(vendorID); ;
@@ -669,57 +744,13 @@ namespace ConsoleApp1.Controller
         }
         public async Task<JObject> GetAddressInfoObj(string addressKeyword)
         {
-            //return await new VendorAddress().GetVendorAddressReceiver(addressKeyword);
             JObject AddressInfoObj = await _address.GetAddressReceiver(addressKeyword);
             return AddressInfoObj;
-           /* JToken targetItem = GetVendorAddressObj["items"].Count() == 1
-                ? GetVendorAddressObj["items"].First() :
-                GetVendorAddressObj["items"]
-                .FirstOrDefault(item => addressToken.All(token => item["road"].Values().
-                Select(tokenItem => Regex.Replace((string)tokenItem, @"[^\w\d]", "")).Contains(token))
-                );
-
-            if (targetItem != null)
-            {
-                AddressInfo addressInfo = new AddressInfo
-                {
-                    lat = (double)targetItem["point"]["lat"],
-                    lon = (double)targetItem["point"]["lng"],
-                    zip_code = (string)targetItem["zipcode"],
-                    sido = (string)targetItem["road"]["sido"],
-                    sigugun = (string)targetItem["road"]["sigugun"],
-                    admin_dongmyun = (string)targetItem["admin"]["dongmyun"],
-                    law_dongmyun = (string)targetItem["law"]["dongmyun"],
-                    road_dongmyun = (string)targetItem["road"]["dongmyun"],
-                    ri = (string)targetItem["road"]["ri"],
-                    admin_detailed_address = (string)targetItem["admin"]["detail"],
-                    law_detailed_address = (string)targetItem["law"]["detail"],
-                    road_detailed_address = (string)targetItem["road"]["detail"],
-                    custom_detailed_address = addressDetailed
-                };
-                return addressInfo;
-            }
-            else
-            {
-                return null;
-            }*/
         }
         public async Task<JArray> GetVendorBillingEntities(int vendorID)
         {
             JArray GetVendorBillingEntitiesObj = await _vendorbillingEntities.GetVendorBillingEntitiesReceiver(vendorID);
             return GetVendorBillingEntitiesObj;
-
-            /*JToken targetItem = GetVendorBillingEntitiesObj.
-                            FirstOrDefault(item => (string)item["billing_entity_type"] == type);
-
-            if (targetItem != null)
-            {
-                return (int)targetItem["id"];
-            }
-            else
-            {
-                return 0;
-            }*/
         }
         public async Task<JObject> CreateVendorFiles(int vendorID, string imageType, string filePath)
         {
@@ -772,6 +803,20 @@ namespace ConsoleApp1.Controller
             JObject UpdateVendorMobileRelayObj = await _vendor.UpdateVendorMobileRelayMethodsReceiver(vendorID, mobileRelay);
             return UpdateVendorMobileRelayObj;
         }
+        public async Task<JArray> UpdateGowinRelayMethods(int vendorID)
+        {
+            List<RelayMethod> relayMethodList = new List<RelayMethod>() { new RelayMethod()
+            {
+                method_type = "gowin",
+                relaydevice = null,
+                contactableemployee_set = new List<object>(),
+                is_active = true,
+                is_owner_using = false
+            }};
+            JArray UpdateGowinRelayMethodsObj = await _vendor.UpdateGowinRelayMethodsReceiver(vendorID, relayMethodList);
+            return UpdateGowinRelayMethodsObj;
+        }
+
         /*public async Task<JObject> GetVendorSearchByCompanyNumber(string vendorName, string companyNumber)
         {
             JObject UpdateVendorMobileRelayObj = await _vendor.SearchVendorReceiver(vendorName, companyNumber);
@@ -785,6 +830,15 @@ namespace ConsoleApp1.Controller
         public async Task<JObject> CreateTiekctFile(int ticketID, string filePath)
         {
             JObject CreateTiekctFileObj = await _ticketFile.CreateTicketFileReceiver(ticketID, filePath);
+            return CreateTiekctFileObj;
+        }
+
+
+
+
+        public async Task<JArray> TEST(int vendorID)
+        {
+            JArray CreateTiekctFileObj = await _vendor.TESTReceiver(vendorID);
             return CreateTiekctFileObj;
         }
 
