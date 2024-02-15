@@ -36,10 +36,42 @@ namespace ConsoleApp1.Controller
                     { "company_number", companyNumber },
                     // Add more parameters as needed
                 };
-                var Endpoint = "/companies/";
+                var Endpoint = "/principal-companies/";
 
                 string queryString = QueryStringBuilder.BuildQueryString(parameters);
                 Endpoint += queryString;
+
+                using (var requestMessage = new HttpRequestMessage(new HttpMethod("GET"), Endpoint))
+                {
+                    try
+                    {
+                        using (var response = await _httpClient.SendAsync(requestMessage))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var contentString = await response.Content.ReadAsStringAsync();
+                                return JObject.Parse(contentString);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
+                                return null;
+                            }
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"Request error: {ex.Message}");
+                        // 예외 처리를 위한 로직 추가
+                        return null;
+                    }
+                }
+            }
+            //사업자 검색(ID)
+            public async Task<JObject> GetCompanyFromIDReceiver(int companyID)
+            {
+                var Endpoint = string.Format("/principal-companies/{0}/", companyID);
 
                 using (var requestMessage = new HttpRequestMessage(new HttpMethod("GET"), Endpoint))
                 {
@@ -194,6 +226,49 @@ namespace ConsoleApp1.Controller
                     }
                 }
             }
+
+            //사업자정보 첨부자료 조회
+            public async Task<JObject> GetCompanyFilesReceiver(int companyID)
+            {
+                Dictionary<string, string> parameters = new Dictionary<string, string>
+                {
+                    { "principal_company", companyID.ToString() },
+                    // Add more parameters as needed
+                };
+
+                var Endpoint = "/companyfiles/";
+
+                string queryString = QueryStringBuilder.BuildQueryString(parameters);
+                Endpoint += queryString;
+
+                using (var requestMessage = new HttpRequestMessage(new HttpMethod("GET"), Endpoint))
+                {
+                    try
+                    {
+                        using (var response = await _httpClient.SendAsync(requestMessage))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var contentString = await response.Content.ReadAsStringAsync();
+                                return JObject.Parse(contentString);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
+                                return null;
+                            }
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"Request error: {ex.Message}");
+                        // 예외 처리를 위한 로직 추가
+                        return null;
+                    }
+                }
+            }
+
             //사업자정보 첨부자료 등록
             public async Task<JObject> CreateCompanyFilesReceiver(int companyID, int fileType, string filePath)
             {
@@ -253,22 +328,91 @@ namespace ConsoleApp1.Controller
                     }
                 }
             }
+            //사업자정보 첨부자료 삭제
+            public async Task<JObject> DeleteCompanyFilesReceiver(int fileID)
+            {
+                var Endpoint = string.Format("/companyfiles/{0}/", fileID);
+
+                using (var requestMessage = new HttpRequestMessage(new HttpMethod("DELETE"), Endpoint))
+                {
+                    try
+                    {
+                        using (var response = await _httpClient.SendAsync(requestMessage))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var contentString = await response.Content.ReadAsStringAsync();
+                                if (string.IsNullOrEmpty(contentString)){
+                                    return new JObject();
+                                }
+                                return JObject.Parse(contentString);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
+                                return null;
+                            }
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"Request error: {ex.Message}");
+                        // 예외 처리를 위한 로직 추가
+                        return null;
+                    }
+                }
+            }
+            public async Task<JObject> GetOneIDOBjReceiver(string oneiD)
+            {
+                Dictionary<string, string> parameters = new Dictionary<string, string>
+                {
+                    { "username", oneiD },
+                    // Add more parameters as needed
+                };
+                var Endpoint = "/users/";
+
+                string queryString = QueryStringBuilder.BuildQueryString(parameters);
+                Endpoint += queryString;
+
+                using (var requestMessage = new HttpRequestMessage(new HttpMethod("GET"), Endpoint))
+                {
+                    try
+                    {
+                        using (var response = await _httpClient.SendAsync(requestMessage))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var contentString = await response.Content.ReadAsStringAsync();
+                                return JObject.Parse(contentString);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
+                                return null;
+                            }
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"Request error: {ex.Message}");
+                        // 예외 처리를 위한 로직 추가
+                        return null;
+                    }
+                }
+            }
         }
 
         public async Task<JObject> GetCompanyID(string companyNumber)
         {
             JObject GetCompanyObj = await _company.GetCompanyReceiver(companyNumber);
             return GetCompanyObj;
-            /*JToken targetItem = GetCompanyObj["results"].First();
-
-            if (targetItem != null)
-            {
-                return (int)targetItem["id"];
-            }
-            else
-            {
-                return 0;
-            }*/
+        }
+        public async Task<JObject> GetCompanyFromIDObj(int companyID)
+        {
+            JObject GetCompanyFromIDObj = await _company.GetCompanyFromIDReceiver(companyID);
+            return GetCompanyFromIDObj;
         }
 
         public async Task<JObject> CreatePrincipalCompany(PrincipalCompany principalCompanyObj)
@@ -293,10 +437,27 @@ namespace ConsoleApp1.Controller
                 return null;
             }
         }
-        public async Task<JObject> CreateCompanyFiles(int companyID, int fileType, string filePath)
+
+        public async Task<JObject> GetCompanyFilesObj(int companyID)
+        {
+            JObject getCompanyFilesObj = await _company.GetCompanyFilesReceiver(companyID);
+            return getCompanyFilesObj;
+        }
+        public async Task<JObject> CreateCompanyFilesObj(int companyID, int fileType, string filePath)
         {
             JObject createCompanyFilesObj = await _company.CreateCompanyFilesReceiver(companyID, fileType, filePath);
             return createCompanyFilesObj;
         }
+        public async Task<JObject> DeleteCompanyFilesObj(int fileID)
+        {
+            JObject deleteCompanyFilesObj = await _company.DeleteCompanyFilesReceiver(fileID);
+            return deleteCompanyFilesObj;
+        }
+        public async Task<JObject> GetOneIDObj(string oneID)
+        {
+            JObject getOneIDObj = await _company.GetOneIDOBjReceiver(oneID);
+            return getOneIDObj;
+        }
+
     }
 }

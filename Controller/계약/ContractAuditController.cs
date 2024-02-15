@@ -199,16 +199,6 @@ namespace ConsoleApp1.Controller
 
             JObject RequestSalesApproveObj = await _salesApprove.RequestSalesApproveReceiver(vendorID, contractID, contractSalesSalesApprove);
             return RequestSalesApproveObj;
-            /*JToken targetItem = RequestSalesApproveObj;                            
-
-            if (targetItem != null)
-            {
-                return (int)targetItem["id"];
-            }
-            else
-            {
-                return 0;
-            }*/
         }
 
         public async Task<JObject> RequestOwnerApprove(int vendorID, int contractID)
@@ -219,50 +209,12 @@ namespace ConsoleApp1.Controller
             };
             JObject RequestOwnerApproveObj = await _ownerApprove.RequestOwnerApproveReceiver(vendorID, contractID, contractAuditOwnerRequest);
             return RequestOwnerApproveObj;
-            /*JToken targetItem = RequestOwnerApproveObj;
-
-            if (targetItem != null)
-            {
-                return (int)targetItem["id"];
-            }
-            else
-            {
-                return 0;
-            }*/
         }
 
-        public async Task<JObject> CreateContractAudit(int vendorID, int managerId, int contractId, string open_date)
+        public async Task<JObject> CreateContractAudit(int vendorID, Models.ContractAudit contractAuditObj)
         {
-            Models.ContractAudit contractAudit = new Models.ContractAudit()
-            {
-                vendor = vendorID,
-                inflow_type = "internal",
-                contract_type = "new_grand_open",
-                contract_date = DateTime.Today.ToString("yyyy-MM-dd"),
-                contract_manager = managerId,
-                is_requested_first_onboarding = true,
-                is_requested_template_menu = true,
-                commission_contract_set = new Contract[] {
-                    new Contract{
-                        id = contractId
-                    }
-                },
-                zero_commission_contract_set= new Contract[] {},
-                additional_fee_set= new Contract[] { },
-                open_date = open_date
-            };
-            JObject CreateContractAuditObj = await _contractAudit.CreateContractAuditReceiver(vendorID, contractAudit);
+            JObject CreateContractAuditObj = await _contractAudit.CreateContractAuditReceiver(vendorID, contractAuditObj);
             return CreateContractAuditObj;
-            /*JToken targetItem = CreateContractAuditObj;
-
-            if (targetItem != null)
-            {
-                return (int)targetItem["id"];
-            }
-            else
-            {
-                return 0;
-            }*/
         }
 
         public async Task<JObject> UpdateContractAudit(int vendorID, int contractID, string open_date)
@@ -274,16 +226,6 @@ namespace ConsoleApp1.Controller
             };
             JObject UpdateContractAuditObj = await _contractAudit.UpdateContractAuditReceiver(vendorID, contractID, contractAuditPatch);
             return UpdateContractAuditObj;
-            /*JToken targetItem = UpdateContractAuditObj;
-
-            if (targetItem != null)
-            {
-                return (int)targetItem["id"];
-            }
-            else
-            {
-                return 0;
-            }*/
         }
 
 

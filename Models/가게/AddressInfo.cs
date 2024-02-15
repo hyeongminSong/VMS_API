@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -20,7 +22,46 @@ namespace ConsoleApp1.Models
         public double lon { get; set; }
         public string custom_detailed_address { get; set; }
     }
-    public class GetAddressItem{
+    public class GetAddressItem
+    {
+        public AddressInfo GetAddressInfo(JObject addressInfoObj, string address, string addressDetail)
+        {
+            JToken targetItem = addressInfoObj["items"].AsEnumerable().
+                GroupBy(jToken => jToken["road"].
+                AsEnumerable().Count(item => address.Contains((string)item))).
+                SelectMany(group => group).
+                OrderByDescending(jToken => (int)jToken["road"].
+                AsEnumerable().
+                Count(item => address.Contains((string)item))).
+                FirstOrDefault();
+
+            //JToken targetItem = addressInfoObj["items"].FirstOrDefault(item => item["road"].All(element => address.Contains((string)element)));
+
+            if (targetItem != null)
+            {
+                AddressInfo addressInfo = new AddressInfo
+                {
+                    lat = (double)targetItem["point"]["lat"],
+                    lon = (double)targetItem["point"]["lng"],
+                    zip_code = (string)targetItem["zipcode"],
+                    sido = (string)targetItem["road"]["sido"],
+                    sigugun = (string)targetItem["road"]["sigugun"],
+                    admin_dongmyun = (string)targetItem["admin"]["dongmyun"],
+                    law_dongmyun = (string)targetItem["law"]["dongmyun"],
+                    road_dongmyun = (string)targetItem["road"]["dongmyun"],
+                    ri = (string)targetItem["road"]["ri"],
+                    admin_detailed_address = (string)targetItem["admin"]["detail"],
+                    law_detailed_address = (string)targetItem["law"]["detail"],
+                    road_detailed_address = (string)targetItem["road"]["detail"],
+                    custom_detailed_address = addressDetail
+                };
+                return addressInfo;
+            }
+            else
+            {
+                return null;
+            }
+        }
         public string[] GetAddressToken(string address)
         {
             Dictionary<string, string> sido_dictionary = new Dictionary<string, string>
@@ -56,16 +97,19 @@ namespace ConsoleApp1.Models
             string pattern = @"^(?<sido>" + string.Join("|", sido_dictionary.Values.Union(sido_dictionary.Keys)) + ")" +
                 "(?<sigugun>.+(시|구|군))" +
                 "(?<dongmyun>.+(로|길))?" +
-                "(?<ri>.+리)?"+
+                "(?<ri>.+리)?" +
                 "(?<detail>.+)?";
             Match match = Regex.Match(address, pattern);
 
             if (match.Success)
             {
+                Console.WriteLine(match.Groups);
                 string[] resultArray = match.Groups.Cast<Group>()
-                    .Where(group => !string.IsNullOrEmpty(group.Value) && !char.IsDigit(group.Name.First()))
-                    .Select(group => sido_dictionary.ContainsKey(group.ToString()) ?
-                    sido_dictionary[group.ToString()] : Regex.Replace(group.Value, @"[^\w\d]", "").Trim()).ToArray();
+                    //.Where(group => group.Captures.Count > 0 && !char.IsDigit(group.Captures[0].Value.First()))
+                    .Where(group => group.Captures.Count > 0)
+                    .Select(group => sido_dictionary.TryGetValue(group.Value, out var value) ? value : Regex.Replace(group.Value, @"[^\w\d]", "").Trim())
+                    .ToArray();
+
                 return resultArray;
             }
             else

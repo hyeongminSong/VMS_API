@@ -135,29 +135,10 @@ namespace ConsoleApp1.Controller
             }*/
         }
 
-        public async Task<JObject> AddCommissionContract(int vendor_id, int billingTypeID,
-            int commissionID, bool is_alliance, string franchiseType, string start_date)
+        public async Task<JObject> AddCommissionContract(Models.CommissionContract commissionContractObj)
         {
-            Models.CommissionContract contract = new Models.CommissionContract()
-            {
-                vendor = vendor_id,
-                commission = commissionID,
-                billing_entity_info = billingTypeID,
-                is_alliance = is_alliance,
-                franchise_type = franchiseType,
-                commission_start_date = start_date
-            };
-
-            JObject GetCommissionIDObj = await _commissionContract.AddCommissionContractReceiver(contract);
+            JObject GetCommissionIDObj = await _commissionContract.AddCommissionContractReceiver(commissionContractObj);
             return GetCommissionIDObj;
-            /*if (GetCommissionIDObj != null)
-            {
-                return (int)GetCommissionIDObj["id"];
-            }
-            else
-            {
-                return 0;
-            }*/
         }
     }
 }

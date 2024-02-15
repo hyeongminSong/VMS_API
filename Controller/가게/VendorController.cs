@@ -17,6 +17,7 @@ namespace ConsoleApp1.Controller
         private readonly Address _address = new Address();
         private readonly VendorBillingEntities _vendorbillingEntities = new VendorBillingEntities();
         private readonly Category _category = new Category();
+        private readonly TicketFile _ticketFile = new TicketFile();
 
         private static HttpClient _httpClient;
         public VendorController(Config config)
@@ -107,7 +108,7 @@ namespace ConsoleApp1.Controller
         private class Vendor
         {
             //가게 검색(가게 상태 - 계약 완료)
-            public async Task<JObject> SearchVendorReceiver(string vendorName, string companyNumber)
+            /*public async Task<JObject> SearchVendorReceiver(string vendorName, string companyNumber)
             {
                 Dictionary<string, string> parameters = new Dictionary<string, string>
                 {
@@ -145,7 +146,7 @@ namespace ConsoleApp1.Controller
                         return null;
                     }
                 }
-            }
+            }*/
             //벤더 이름 중복 체크
             public async Task<JObject> CheckVendorDuplicateNameReceiver(string vendorName)
             {
@@ -585,8 +586,51 @@ namespace ConsoleApp1.Controller
                 }
             }
         }
+        private class TicketFile
+        {
+            public async Task<JObject> CreateTicketFileReceiver(int ticketID, string filePath)
+            {
+                var formData = new MultipartFormDataContent
+                {
+                    { new ByteArrayContent(System.IO.File.ReadAllBytes(filePath)), "file_path", System.IO.Path.GetFileName(filePath) },
+                    { new StringContent(ticketID.ToString()) , "ticket" }
+                };
 
-        public async Task<JArray> GetCategoryToken(string categoryName)
+                var Endpoint = string.Format("/tickets/{0}/ticket-files/", ticketID);
+
+                using (var requestMessage = new HttpRequestMessage(new HttpMethod("POST"), Endpoint)
+                {
+                    Content = formData
+                })
+                {
+                    try
+                    {
+                        using (var response = await _httpClient.SendAsync(requestMessage))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var contentString = await response.Content.ReadAsStringAsync();
+                                return JObject.Parse(contentString);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
+                                return null;
+                            }
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"Request error: {ex.Message}");
+                        // 예외 처리를 위한 로직 추가
+                        return null;
+                    }
+                }
+            }
+        }
+
+        public async Task<JArray> GetCategoryToken()
         {
             JArray GetCategoryObj = await _category.GetCategoryReceiver();
             return GetCategoryObj;
@@ -623,13 +667,11 @@ namespace ConsoleApp1.Controller
             JObject UpdateVendorObj = await _vendor.UpdateVendorReceiver(vendorID, obj);
             return UpdateVendorObj;
         }
-        public async Task<JObject> GetAddressInfo(string addressKeyword)
+        public async Task<JObject> GetAddressInfoObj(string addressKeyword)
         {
             //return await new VendorAddress().GetVendorAddressReceiver(addressKeyword);
-            string[] addressToken = new GetAddressItem().GetAddressToken(addressKeyword);
-            Console.WriteLine(string.Join(";", addressToken));
-            JObject GetVendorAddressObj = await _address.GetAddressReceiver(addressKeyword);
-            return GetVendorAddressObj;
+            JObject AddressInfoObj = await _address.GetAddressReceiver(addressKeyword);
+            return AddressInfoObj;
            /* JToken targetItem = GetVendorAddressObj["items"].Count() == 1
                 ? GetVendorAddressObj["items"].First() :
                 GetVendorAddressObj["items"]
@@ -730,15 +772,20 @@ namespace ConsoleApp1.Controller
             JObject UpdateVendorMobileRelayObj = await _vendor.UpdateVendorMobileRelayMethodsReceiver(vendorID, mobileRelay);
             return UpdateVendorMobileRelayObj;
         }
-        public async Task<JObject> GetVendorSearchByCompanyNumber(string vendorName, string companyNumber)
+        /*public async Task<JObject> GetVendorSearchByCompanyNumber(string vendorName, string companyNumber)
         {
             JObject UpdateVendorMobileRelayObj = await _vendor.SearchVendorReceiver(vendorName, companyNumber);
             return UpdateVendorMobileRelayObj;
-        }
+        }*/
         public async Task<JObject> CheckVendorDuplicateName(string vendorName)
         {
             JObject CheckVendorDuplicateNameObj = await _vendor.CheckVendorDuplicateNameReceiver(vendorName);
             return CheckVendorDuplicateNameObj;
+        }
+        public async Task<JObject> CreateTiekctFile(int ticketID, string filePath)
+        {
+            JObject CreateTiekctFileObj = await _ticketFile.CreateTicketFileReceiver(ticketID, filePath);
+            return CreateTiekctFileObj;
         }
 
 
