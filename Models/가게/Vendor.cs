@@ -29,13 +29,14 @@ namespace ConsoleApp1.Models
         public int modified_by { get; set; }
         public int? bill_recv_address { get; set; }
     }
-    public class Vendor
+    public class VendorBasicInfo
     {
         public string name { get; set; }
         public Company company { get; set; }
         public Franchise franchise { get; set; }
         public BillingEntityInfo billing_entity_info { get; set; }
         public List<string> order_methods { get; set; }
+        public List<string> order_types { get; set; }
         public List<string> payment_methods { get; set; }
         public string phone_number { get; set; }
         public bool is_below_minimum_order_available { get; set; }
@@ -100,4 +101,8 @@ namespace ConsoleApp1.Models
         public bool is_owner_using { get; set; }
     }
 
+    public class ServiceActivation
+    {
+        public bool is_active { get; set; }
+    }
 }

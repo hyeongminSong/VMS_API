@@ -1,4 +1,6 @@
-﻿namespace ConsoleApp1.Models
+﻿using System.Collections.Generic;
+
+namespace ConsoleApp1.Models
 {
     public class ContractAudit
     {
@@ -11,9 +13,9 @@
         public bool is_requested_next_onboarding { get; set; } //수정 온보딩
         public bool is_requested_pos_code { get; set; } //POS코드 연결
         public bool is_requested_template_menu { get; set; } //템플릿 메뉴 등록
-        public Contract[] commission_contract_set { get; set; } //주문당 이용료 정보
-        public Contract[] zero_commission_contract_set { get; set; } //월정액 이용료 정보
-        public Contract[] additional_fee_set { get; set; } //추가 과금 정보
+        public List<Contract> commission_contract_set { get; set; } //주문당 이용료 정보
+        public List<Contract> zero_commission_contract_set { get; set; } //월정액 이용료 정보
+        public List<Contract> additional_fee_set { get; set; } //추가 과금 정보
         public string open_date { get; set; } //영업 개시일
     }
 

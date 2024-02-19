@@ -127,6 +127,7 @@
     <Compile Include="Controller\프랜차이즈\FranchisesController.cs" />
     <Compile Include="Models\Commission.cs" />
     <Compile Include="Models\ContractAudit.cs" />
+    <Compile Include="Models\enum.cs" />
     <Compile Include="Models\holiday_schedule_meta.cs" />
     <Compile Include="Models\WorkingScheduleBody.cs" />
     <Compile Include="Models\DeleteTempScheduleTimeBody.cs" />

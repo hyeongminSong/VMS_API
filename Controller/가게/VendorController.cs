@@ -18,6 +18,7 @@ namespace ConsoleApp1.Controller
         private readonly VendorBillingEntities _vendorbillingEntities = new VendorBillingEntities();
         private readonly Category _category = new Category();
         private readonly TicketFile _ticketFile = new TicketFile();
+        private readonly VendorFile _vendorFile = new VendorFile();
 
         private static HttpClient _httpClient;
         public VendorController(Config config)
@@ -215,7 +216,7 @@ namespace ConsoleApp1.Controller
                 }
             }
             //가게 기본정보 생성
-            public async Task<JObject> CreateVendorReceiver(Models.Vendor CreateVendorObj)
+            public async Task<JObject> CreateVendorReceiver(VendorBasicInfo CreateVendorObj)
             {
                 var settings = new JsonSerializerSettings
                 {
@@ -592,22 +593,10 @@ namespace ConsoleApp1.Controller
                     }
                 }
             }
-
-            
-                   
-
-
-
-
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="vendorID"></param>
-            /// <returns></returns>
-            public async Task<JArray> TESTReceiver(int vendorID)
+            //연동 여부 조회
+            public async Task<JObject> GetServiceActivationsReceiver(int vendorID)
             {
-                var Endpoint = string.Format("/vendor/{0}/relay-methods/", vendorID);
+                var Endpoint = string.Format("/vendor/{0}/service-activations/", vendorID);
                 using (var requestMessage = new HttpRequestMessage(new HttpMethod("GET"), Endpoint))
                 {
                     try
@@ -617,8 +606,7 @@ namespace ConsoleApp1.Controller
                             if (response.IsSuccessStatusCode)
                             {
                                 var contentString = await response.Content.ReadAsStringAsync();
-                                JArray result = JArray.Parse(contentString);
-                                Console.WriteLine(result); return result;
+                                return JObject.Parse(contentString);
                             }
                             else
                             {
@@ -636,8 +624,50 @@ namespace ConsoleApp1.Controller
                     }
                 }
             }
+            //모바일 주문전달수단 활성화 여부 관리
+            public async Task<JObject> UpdateServiceActivationsReceiver(int vendorID, int serviceActivationsID, ServiceActivation serviceActivation)
+            {
+                /*var settings = new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    DefaultValueHandling = DefaultValueHandling.Ignore
+                };*/
+                //string jsonString = JsonConvert.SerializeObject(serviceActivation, settings);
+                string jsonString = JsonConvert.SerializeObject(serviceActivation);
+                var jsonContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
 
+                var Endpoint = string.Format("/vendor/{0}/service-activations/{1}/", vendorID, serviceActivationsID);
 
+                using (var requestMessage = new HttpRequestMessage(new HttpMethod("PATCH"), Endpoint)
+                {
+                    Content = jsonContent
+                })
+                {
+                    try
+                    {
+                        using (var response = await _httpClient.SendAsync(requestMessage))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var contentString = await response.Content.ReadAsStringAsync();
+                                return JObject.Parse(contentString);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
+                                return null;
+                            }
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"Request error: {ex.Message}");
+                        // 예외 처리를 위한 로직 추가
+                        return null;
+                    }
+                }
+            }
 
         }
         private class VendorBillingEntities
@@ -719,6 +749,81 @@ namespace ConsoleApp1.Controller
             }
         }
 
+        private class VendorFile
+        {
+            public async Task<JArray> GetVendorFileReceiver(int vendorID)
+            {
+                var Endpoint = string.Format("/vendor/{0}/vendorfiles/", vendorID);
+                using (var requestMessage = new HttpRequestMessage(new HttpMethod("GET"), Endpoint))
+                {
+                    try
+                    {
+                        using (var response = await _httpClient.SendAsync(requestMessage))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var contentString = await response.Content.ReadAsStringAsync();
+                                return JArray.Parse(contentString);
+
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
+                                return null;
+                            }
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"Request error: {ex.Message}");
+                        // 예외 처리를 위한 로직 추가
+                        return null;
+                    }
+                }
+            }
+            public async Task<JObject> CreateVendorFileReceiver(int vendorID, string imageType, string filePath)
+            {
+                var formData = new MultipartFormDataContent
+                {
+                    { new StringContent(imageType) , "image_type" },
+                    { new ByteArrayContent(System.IO.File.ReadAllBytes(filePath)), "file_path", System.IO.Path.GetFileName(filePath) },
+                };
+
+                var Endpoint = string.Format("/vendor/{0}/vendorfiles/", vendorID);
+
+                using (var requestMessage = new HttpRequestMessage(new HttpMethod("POST"), Endpoint)
+                {
+                    Content = formData
+                })
+                {
+                    try
+                    {
+                        using (var response = await _httpClient.SendAsync(requestMessage))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var contentString = await response.Content.ReadAsStringAsync();
+                                return JObject.Parse(contentString);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
+                                return null;
+                            }
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"Request error: {ex.Message}");
+                        // 예외 처리를 위한 로직 추가
+                        return null;
+                    }
+                }
+            }
+        }
+
         public async Task<JArray> GetCategoryToken()
         {
             JArray GetCategoryObj = await _category.GetCategoryReceiver();
@@ -732,7 +837,7 @@ namespace ConsoleApp1.Controller
         {
             return await _vendor.GetVendorReceiver(vendorID); ;
         }
-        public async Task<JObject> CreateVendor(Models.Vendor vendorObject)
+        public async Task<JObject> CreateVendor(VendorBasicInfo vendorObject)
         {
             JObject GetVendorAddressObj = await _vendor.CreateVendorReceiver(vendorObject);
             return GetVendorAddressObj;
@@ -832,17 +937,19 @@ namespace ConsoleApp1.Controller
             JObject CreateTiekctFileObj = await _ticketFile.CreateTicketFileReceiver(ticketID, filePath);
             return CreateTiekctFileObj;
         }
-
-
-
-
-        public async Task<JArray> TEST(int vendorID)
+        public async Task<JObject> GetServiceActivations(int vendorID)
         {
-            JArray CreateTiekctFileObj = await _vendor.TESTReceiver(vendorID);
-            return CreateTiekctFileObj;
+            JObject GetServiceActivationsObj = await _vendor.GetServiceActivationsReceiver(vendorID);
+            return GetServiceActivationsObj;
         }
-
-
-
+        public async Task<JObject> UpdateServiceActivations(int vendorID, int serviceActivationsID, bool isActive)
+        {
+            ServiceActivation serviceActivation = new ServiceActivation()
+            {
+                is_active = isActive,
+            };
+            JObject UpdateServiceActivationsObj = await _vendor.UpdateServiceActivationsReceiver(vendorID, serviceActivationsID, serviceActivation);
+            return UpdateServiceActivationsObj;
+        }
     }
 }
