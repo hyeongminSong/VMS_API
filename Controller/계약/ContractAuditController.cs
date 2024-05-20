@@ -27,6 +27,36 @@ namespace ConsoleApp1.Controller
 
         private class ContractAudit
         {
+            public async Task<JObject> GetContractAuditReceiver(int vendorID)
+            {
+                var Endpoint = string.Format("/vendor/{0}/contract-audit/", vendorID);
+                using (var requestMessage = new HttpRequestMessage(new HttpMethod("GET"), Endpoint))
+                {
+                    try
+                    {
+                        using (var response = await _httpClient.SendAsync(requestMessage))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var contentString = await response.Content.ReadAsStringAsync();
+                                return JObject.Parse(contentString);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
+                                return null;
+                            }
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"Request error: {ex.Message}");
+                        // 예외 처리를 위한 로직 추가
+                        return null;
+                    }
+                }
+            }
             //계약 심사 요청
             public async Task<JObject> CreateContractAuditReceiver(int vendorID, Models.ContractAudit contractAudit)
             {
@@ -226,6 +256,11 @@ namespace ConsoleApp1.Controller
             };
             JObject UpdateContractAuditObj = await _contractAudit.UpdateContractAuditReceiver(vendorID, contractID, contractAuditPatch);
             return UpdateContractAuditObj;
+        }
+        public async Task<JObject> GetContractAudit(int vendorID)
+        {
+            JObject GetContractAuditObj = await _contractAudit.GetContractAuditReceiver(vendorID);
+            return GetContractAuditObj;
         }
 
 

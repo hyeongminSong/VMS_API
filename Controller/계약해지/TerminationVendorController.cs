@@ -95,40 +95,16 @@ namespace ConsoleApp1.Controller
             }
         }
 
-        public async Task<JObject> GetTerminationReasonID(string terminationReason)
+        public async Task<JObject> GetTerminationReasonID()
         {
             JObject GetTerminationReasonObj = await _termination.GetTerminationReasonIDReceiver();
             return GetTerminationReasonObj;
-            /*JToken targetItem = GetTerminationReasonObj["results"].
-                FirstOrDefault(item => (string)item["reason"] == terminationReason);
-
-            if (targetItem != null)
-            {
-                return (int)targetItem["id"];
-            }
-            else
-            {
-                return 0;
-            }*/
         }
 
-        public async Task<JArray> CreateTerminationVendor(int companyID, string companyNumber, int vendorID,
-            int terminationReasonID, string terminationDate)
+        public async Task<JArray> CreateTerminationVendor(BulkCreateTerminationVendor bulkCreateTerminationVendor)
         {
-            BulkCreateTerminationVendor bulkCreateTerminationVendor = new BulkCreateTerminationVendor()
-            {
-                company_id = companyID,
-                company_number = companyNumber,
-                vendor_ids = new int[]{ vendorID },
-                termination = new termination()
-                {
-                    reason = terminationReasonID,
-                    termination_date = terminationDate
-                }
-            };
             JArray CreateTerminationVendorObj = await _termination.CreateTerminationVendorReceiver(bulkCreateTerminationVendor);
             return CreateTerminationVendorObj;
-
         }
     }
 }

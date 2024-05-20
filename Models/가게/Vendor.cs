@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 
 namespace ConsoleApp1.Models
@@ -28,6 +29,19 @@ namespace ConsoleApp1.Models
         public int created_by { get; set; }
         public int modified_by { get; set; }
         public int? bill_recv_address { get; set; }
+
+        public static implicit operator BillingEntityInfo(JToken v)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    public class BillingEntities
+    {
+        public int id { get; set; }
+        public string billing_entity_type { get; set; }
+        public int billing_entity_id { get; set; }
+        public string billing_entity_description { get; set; }
+        public string default_billing_cycle { get; set; }
     }
     public class VendorBasicInfo
     {
@@ -58,19 +72,6 @@ namespace ConsoleApp1.Models
         public string competitor_type { get; set; }
         public string competitor_id { get; set; }
         public bool has_liquor_sales_qualification { get; set; }
-    }
-
-    public class termination
-    {
-        public int reason { get; set; }
-        public string termination_date { get; set; }
-    }
-    public class BulkCreateTerminationVendor
-    {
-        public int company_id { get; set; }
-        public string company_number { get; set; }
-        public int[] vendor_ids { get; set; }
-        public termination termination { get; set; }
     }
     public class VendorDescriptionInfo
     {

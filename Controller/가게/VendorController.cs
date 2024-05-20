@@ -70,7 +70,7 @@ namespace ConsoleApp1.Controller
             //주소 검색
             public async Task<JObject> GetAddressReceiver(string addressKeyword)
             {
-                Dictionary<string, string> parameters = new Dictionary<string, string>
+                Dictionary<string, object> parameters = new Dictionary<string, object>
                 {
                     { "search_keyword", addressKeyword }
                 };
@@ -109,11 +109,12 @@ namespace ConsoleApp1.Controller
         private class Vendor
         {
             //가게 검색(가게 상태 - 계약 완료)
-            public async Task<JObject> SearchVendorFromNameReceiver(string vendorName)
+            public async Task<JObject> SearchVendorFromNameReceiver(string vendorName, string companyNumber)
             {
-                Dictionary<string, string> parameters = new Dictionary<string, string>
+                Dictionary<string, object> parameters = new Dictionary<string, object>
                 {
                     { "name", vendorName },
+                    { "company_number", companyNumber },
                 };
                 var Endpoint = "/vendor/";
 
@@ -149,7 +150,7 @@ namespace ConsoleApp1.Controller
             //벤더 이름 중복 체크
             public async Task<JObject> CheckVendorDuplicateNameReceiver(string vendorName)
             {
-                Dictionary<string, string> parameters = new Dictionary<string, string>
+                Dictionary<string, object> parameters = new Dictionary<string, object>
                 {
                     { "name", vendorName }
                 };
@@ -321,7 +322,6 @@ namespace ConsoleApp1.Controller
                 {
                     { new StringContent(imageType.ToString()), "image_type" },
                     { new ByteArrayContent(System.IO.File.ReadAllBytes(filePath)), "file_path", System.IO.Path.GetFileName(filePath) },
-                    { new StringContent(vendorID.ToString()) , "principal_company" }
                 };
 
                 var Endpoint = string.Format("/vendor/{0}/vendorfiles/", vendorID);
@@ -627,12 +627,6 @@ namespace ConsoleApp1.Controller
             //모바일 주문전달수단 활성화 여부 관리
             public async Task<JObject> UpdateServiceActivationsReceiver(int vendorID, int serviceActivationsID, ServiceActivation serviceActivation)
             {
-                /*var settings = new JsonSerializerSettings
-                {
-                    NullValueHandling = NullValueHandling.Ignore,
-                    DefaultValueHandling = DefaultValueHandling.Ignore
-                };*/
-                //string jsonString = JsonConvert.SerializeObject(serviceActivation, settings);
                 string jsonString = JsonConvert.SerializeObject(serviceActivation);
                 var jsonContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
 
@@ -642,6 +636,74 @@ namespace ConsoleApp1.Controller
                 {
                     Content = jsonContent
                 })
+                {
+                    try
+                    {
+                        using (var response = await _httpClient.SendAsync(requestMessage))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var contentString = await response.Content.ReadAsStringAsync();
+                                return JObject.Parse(contentString);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
+                                return null;
+                            }
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"Request error: {ex.Message}");
+                        // 예외 처리를 위한 로직 추가
+                        return null;
+                    }
+                }
+            }
+            public async Task<JObject> GetCopyVendorReceiver(int vendorID)
+            {
+                var Endpoint = string.Format("/vendor/{0}/copy-vendor/", vendorID);
+                using (var requestMessage = new HttpRequestMessage(new HttpMethod("POST"), Endpoint))
+                {
+                    try
+                    {
+                        using (var response = await _httpClient.SendAsync(requestMessage))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var contentString = await response.Content.ReadAsStringAsync();
+                                return JObject.Parse(contentString);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Response status: {response.StatusCode}");
+                                Console.WriteLine($"Response body: {await response.Content.ReadAsStringAsync()}");
+                                return null;
+                            }
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"Request error: {ex.Message}");
+                        // 예외 처리를 위한 로직 추가
+                        return null;
+                    }
+                }
+            }
+            public async Task<JObject> GetContactableEmployeesReceiver(int vendorID)
+            {
+                Dictionary<string, object> parameters = new Dictionary<string, object>
+                {
+                    { "vendor_pk", vendorID.ToString() },
+                };
+                var Endpoint = string.Format("/vendor/{0}/contactable-employees/", vendorID);
+
+                string queryString = QueryStringBuilder.BuildQueryString(parameters);
+                Endpoint += queryString;
+
+                using (var requestMessage = new HttpRequestMessage(new HttpMethod("GET"), Endpoint))
                 {
                     try
                     {
@@ -829,9 +891,9 @@ namespace ConsoleApp1.Controller
             JArray GetCategoryObj = await _category.GetCategoryReceiver();
             return GetCategoryObj;
         }
-        public async Task<JObject> SearchVendorFromName(string vendorName)
+        public async Task<JObject> SearchVendorFromName(string vendorName, string company_number)
         {
-            return await _vendor.SearchVendorFromNameReceiver(vendorName);
+            return await _vendor.SearchVendorFromNameReceiver(vendorName, company_number);
         }
         public async Task<JObject> GetVendor(int vendorID)
         {
@@ -950,6 +1012,16 @@ namespace ConsoleApp1.Controller
             };
             JObject UpdateServiceActivationsObj = await _vendor.UpdateServiceActivationsReceiver(vendorID, serviceActivationsID, serviceActivation);
             return UpdateServiceActivationsObj;
+        }
+        public async Task<JObject> GetCopyVendor(int vendorID)
+        {
+            JObject GetCopyVendorObj = await _vendor.GetCopyVendorReceiver(vendorID);
+            return GetCopyVendorObj;
+        }
+        public async Task<JObject> GetContactableEmployees(int vendorID)
+        {
+            JObject GetContactableEmployeesObj = await _vendor.GetContactableEmployeesReceiver(vendorID);
+            return GetContactableEmployeesObj;
         }
     }
 }

@@ -17,7 +17,6 @@ namespace ConsoleApp1.Models
 
             return dataTable;
         }
-
         public DataTable CreateunParseDataTable()
         {
             DataTable dataTable = new DataTable();
@@ -29,75 +28,22 @@ namespace ConsoleApp1.Models
 
             return dataTable;
         }
-        //자동화 양식 Table을 API 프로세스 양식 Table로 변경
-        public DataTable ParsingDataTable(DataTable unParseTable)
-        {
-            DataTable workingTable = CreateParseDataTable();
-
-            foreach (DataRow row in unParseTable.Rows)
-            {
-                List<TimeSpan> BreakTimeTimeSpanList = new List<TimeSpan> { };
-
-                if (row["break_time"] == null)
-                {
-                    BreakTimeTimeSpanList = null;
-                }
-                else
-                {
-                    foreach (string breakTimeString in (string[])row["break_time"])
-                    {
-                        BreakTimeTimeSpanList.Add(new TimeSpan
-                        {
-                            start_time = breakTimeString.Split('-').First(),
-                            end_time = breakTimeString.Split('-').Last()
-                        });
-                    }
-                }
-
-                workingTable.Rows.Add(
-                    row["weekday"],
-                    new TimeSpan
-                    {
-                        start_time = (string)row["opening_start_time"],
-                        end_time = (string)row["opening_end_time"]
-                    },
-                    BreakTimeTimeSpanList == null ? null : BreakTimeTimeSpanList.ToArray()
-                );
-
-            }
-            return workingTable;
-        }
 
         //API 프로세스 양식 Table을 자동화 양식 Table로 변경
-        public DataTable unParsingDataTable(DataTable ParseTable)
+        public DataTable ParseRegularScheduleMetaToDataTable(RegularScheduleMeta[] regularScheduleMetas)
         {
-            DataTable workingTable = CreateunParseDataTable();
-
-            foreach (DataRow row in ParseTable.Rows)
+            DataTable dataTable = CreateunParseDataTable();
+            foreach (var regularSchjedule in regularScheduleMetas)
             {
+                TimeSpan opening_time = regularSchjedule.opening_time;
                 List<string> BreakTimeStringList = new List<string> { };
-
-                if (row["break_time"] == null)
+                foreach (TimeSpan breakTimeTimeSpan in regularSchjedule.break_time)
                 {
-                    BreakTimeStringList = null;
+                    BreakTimeStringList.Add(breakTimeTimeSpan.start_time + "-" + breakTimeTimeSpan.end_time); 
                 }
-                else
-                {
-                    foreach (TimeSpan breakTimeTimeSpan in (TimeSpan[])row["break_time"])
-                    {
-                        BreakTimeStringList.Add(breakTimeTimeSpan.start_time + "-" + breakTimeTimeSpan.end_time);
-                    }
-                }
-
-                TimeSpan openingTime = (TimeSpan)row["opening_time"];
-
-                workingTable.Rows.Add(row["weekday"],
-                    openingTime.start_time,
-                    openingTime.end_time,
-                    BreakTimeStringList == null ? null : BreakTimeStringList.ToArray()
-                    );
+                dataTable.Rows.Add(regularSchjedule.weekday, opening_time.start_time, opening_time.end_time, BreakTimeStringList.ToArray());
             }
-            return workingTable;
+            return dataTable;
         }
     }
 }

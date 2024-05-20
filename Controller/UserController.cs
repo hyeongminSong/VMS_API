@@ -9,11 +9,12 @@ using System.Threading.Tasks;
 
 namespace ConsoleApp1.Controller
 {
-    public class FranchisesController
+    public class UserController
     {
-        private readonly FranchisesID _franchisesID = new FranchisesID();
+        private readonly User _user = new User();
+
         private static HttpClient _httpClient;
-        public FranchisesController(Config config)
+        public UserController(Config config)
         {
             _httpClient = new HttpClient
             {
@@ -22,20 +23,20 @@ namespace ConsoleApp1.Controller
             _httpClient.DefaultRequestHeaders.Add("accept", "application/json");
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {config.Token}");
         }
-        private class FranchisesID
+        private class User
         {
-            public async Task<JObject> GetFranchisesIDReceiver(bool is_group, string franchisesName)
+            public async Task<JObject> GetUserReceiver(string oneID, string phoneNumber, string userName)
             {
                 Dictionary<string, object> parameters = new Dictionary<string, object>
                 {
-                    { "is_group", is_group.ToString() },
-                    { "name", franchisesName }
-                    // Add more parameters as needed
+                    { "username", oneID },
+                    { "phone", phoneNumber },
+                    { "name", userName }
                 };
-                var Endpoint = "/franchises/";
+                var Endpoint = "/users/"; 
+
                 string queryString = QueryStringBuilder.BuildQueryString(parameters);
                 Endpoint += queryString;
-
                 using (var requestMessage = new HttpRequestMessage(new HttpMethod("GET"), Endpoint))
                 {
                     try
@@ -46,7 +47,6 @@ namespace ConsoleApp1.Controller
                             {
                                 var contentString = await response.Content.ReadAsStringAsync();
                                 return JObject.Parse(contentString);
-
                             }
                             else
                             {
@@ -65,21 +65,11 @@ namespace ConsoleApp1.Controller
                 }
             }
         }
-        public async Task<JObject> GetFranchisesID(bool is_group, string franchisesName)
-        {
-            JObject GetFranchisesIDObj = await _franchisesID.GetFranchisesIDReceiver(is_group, franchisesName);
-            return GetFranchisesIDObj;
-            /*JToken targetItem = GetFranchisesIDObj["results"].
-                            FirstOrDefault(item => ((string)item["name"]).EndsWith(franchisesName));
 
-            if (targetItem != null)
-            {
-                return (int)targetItem["id"];
-            }
-            else
-            {
-                return 0;
-            }*/
+        public async Task<JObject> GetUser(string oneID, string phoneNumber, string userName)
+        {
+            JObject GetOrganizationObj = await _user.GetUserReceiver(oneID, phoneNumber, userName);
+            return GetOrganizationObj;
         }
     }
 }

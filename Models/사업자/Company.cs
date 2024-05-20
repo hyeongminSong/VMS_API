@@ -1,7 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace ConsoleApp1.Models
 {
+    public class Company
+    {
+        public int id { get; set; }
+        public string name { get; set; }
+        public bool is_active { get; set; }
+        public PrincipalCompany principal_company { get; set; }
+        public string subordinate_num { get; set; }
+        public bool is_rep_name_inconsistent { get; set; }
+        public string created_datetime { get; set; }
+        public string modified_datetime { get; set; }
+        public 사업자.User user { get; set; }
+        public Representative representative { get; set; }
+        public int? created_by { get; set; }
+        public string created_by_slug { get; set; }
+    }
     public class Representative
     {
         public int? id { get; set; }
@@ -25,6 +41,7 @@ namespace ConsoleApp1.Models
     }
     public class PrincipalCompany
     {
+        public int id { get; set; }
         public string company_number { get; set; }
         public string company_number_code { get; set; }
         public string company_type { get; set; }
@@ -39,7 +56,7 @@ namespace ConsoleApp1.Models
         public string corp_phone { get; set; }
         public string estimated_purpose_file_type { get; set; }
         public string corp_name_eng { get; set; }
-        public List<Representative> representative_set { get; set; }
+        public Representative[] representative_set { get; set; }
         public string sales_reg_number { get; set; }
         public AddressInfo address { get; set; }
         public string liquor_sales_reg_number { get; set; }
@@ -49,12 +66,5 @@ namespace ConsoleApp1.Models
         public int modified_by { get; set; }
         public string custom_detailed_address { get; set; }
         public string estimated_purpose { get; set; }
-    }
-    public class Company
-    {
-        public int id { get; set; }
-        public string name { get; set; }
-        public PrincipalCompany principal_company { get; set; }
-        public string subordinate_num { get; set; }
     }
 }
